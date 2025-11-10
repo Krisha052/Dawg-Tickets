@@ -5,3 +5,14 @@ The University of Georgia Athletic Association (UGAAA) would like to create a we
 From this platform, users will be able to post tickets available for trade, search for others seeking trades, and securely connect through a verified account system (SSO). Users may also simply transfer tickets one way to their account of choice (similar to the current donation system, but with the additional option of selecting which peer receives the ticket)
 
 It is the goal of this project to provide a functional web-based trading system that satisfies the UGAAA and student users. The project goals are:
+- Provide a secure and accessible platform for users to list and trade UGA athletic tickets.
+- Allow users to log in via SSO to ensure trades occur within the UGA community.
+- Enable users to filter by sport, date, and seat section to find relevant trade offers.
+- Offer a request and confirmation system allowing both parties to agree on a trade.
+- Maintain a trade history and confirmation log for accountability.
+
+The success of this project is measured by:
+- Meeting all the functional and non-functional requirements (outlined in the Requirements Document).
+- Achieving usability for at least 90% …
+- Demonstrating the team’s ability to work through the software development lifecycles with understanding of its necessary components, while producing a working product and
+deliverables.
