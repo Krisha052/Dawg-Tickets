@@ -21,3 +21,10 @@ deliverables.
 HTML, CSS, JavaScript, Node.js, MongoDB
 
 ## Tentative UI Design
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Login%20Page.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Sign-up%20Page.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Navigation%20Page.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Home%20Page.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Trade%20Creation%20Page.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Current%20Trades.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Trade%20History%20Page.png?raw=true">
