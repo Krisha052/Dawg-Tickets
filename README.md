@@ -16,3 +16,8 @@ The success of this project is measured by:
 - Achieving usability for at least 90% …
 - Demonstrating the team’s ability to work through the software development lifecycles with understanding of its necessary components, while producing a working product and
 deliverables.
+
+## Tech Stack
+HTML, CSS, JavaScript, Node.js, MongoDB
+
+## Tentative UI Design
