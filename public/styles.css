@@ -1,51 +1,51 @@
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f2f2f2;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-.login-container {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  width: 300px;
-  text-align: center;
+.the-container {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
 }
 
-.login-container h2 {
-  margin-bottom: 20px;
+.the-container h2 {
+    margin-bottom: 20px;
 }
 
-.login-container input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+.the-container input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
-.login-btn {
-  background-color: #BA0C2F;
-  color: white;
-  border: none;
-  padding: 10px;
-  width: 100%;
-  border-radius: 5px;
-  cursor: pointer;
+.the-btn {
+    background-color: #BA0C2F;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-.login-btn:hover {
-  background-color: #BA0C2F;
+.the-btn:hover {
+    background-color: #BA0C2F;
 }
 
-.create-account-link {
-  margin-top: 15px;
-  color: #3498db;
+.the-account-link {
+    margin-top: 15px;
+    color: #3498db;
 }
 
-.create-account-link:hover {
-  text-decoration: underline;
+.the-account-link:hover {
+    text-decoration: underline;
 }
