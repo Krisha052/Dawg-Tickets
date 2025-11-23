@@ -1,22 +1,138 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8">
+  <title>Dawg Tickets</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
-
- <body>
-    <div class="the-container">
-        <h2>Login</h2>
-            <form id="formLogin">
-                <input type="text" name="username" placeholder="Username" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <button type="submit" class="the-btn">Login</button>
-            </form>
-            <a href="create.html" class="the-account-link">Create account</a>
+<body>
+  <!-- nav -->
+  <header>
+    <div class="logo">
+      <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
+      <div>Dawg-Tickets</div>
     </div>
-  </body>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="index.html#events">Events</a>
+      <a href="your-trades.html">Your Trades</a>
+      <a href="trade-history.html">Trade History</a>
+      <a href="create-listing.html">+ Create Trade</a>
+    </nav>
+  </header>
+
+  <div class="container" id="events">
+    <h1>Events</h1>
+
+    <!-- search bar -->
+    <input
+      id="search"
+      placeholder="Search events..."
+      style="width:100%; padding:10px; margin-bottom:16px;"
+    >
+
+    <!-- sections will be injected here -->
+    <div id="events-sections"></div>
+  </div>
+
+  <!-- FRONTEND EVENT LOGIC -->
+  <script>
+    // EVENTS DATA (used to generate homepage UI)
+    const events = [
+      // --- UGA Football ---
+      { id: 'fb-marshall',  title:'FB: Georgia v. Marshall',  category:'UGA Football', img:'images/GvM.png' },
+      { id: 'fb-alabama',   title:'FB: Georgia v. Alabama',   category:'UGA Football', img:'images/GvA.png' },
+      { id: 'fb-tech',      title:'FB: Georgia v. Tech',      category:'UGA Football', img:'images/GvT.png' },
+
+      // --- UGA Basketball ---
+      { id: 'bb-kentucky',  title:'MBB: Georgia v. Kentucky', category:'UGA Basketball', img:'images/GvM.png' },
+      { id: 'bb-auburn',    title:'MBB: Georgia v. Auburn',   category:'UGA Basketball', img:'images/GvA.png' },
+      { id: 'bb-tennessee', title:'MBB: Georgia v. Tennessee',category:'UGA Basketball', img:'images/GvT.png' },
+
+      // --- UGA Baseball ---
+      { id: 'bsb-florida',  title:'BSB: Georgia v. Florida',  category:'UGA Baseball', img:'images/GvM.png' },
+      { id: 'bsb-auburn',   title:'BSB: Georgia v. Auburn',   category:'UGA Baseball', img:'images/GvA.png' },
+
+      // --- UGA Gymnastics ---
+      { id: 'gym-alabama',  title:'Gym: Georgia v. Alabama',  category:'UGA Gymnastics', img:'images/GvT.png' }
+    ];
+
+    const sectionsContainer = document.getElementById('events-sections');
+    const searchInput = document.getElementById('search');
+
+    function groupByCategory(events) {
+      const groups = {};
+      events.forEach(event => {
+        if (!groups[event.category]) {
+          groups[event.category] = [];
+        }
+        groups[event.category].push(event);
+      });
+      return groups;
+    }
+
+    function renderEvents(filter = '') {
+      const search = filter.toLowerCase();
+
+      // Filter events by text input
+      const filtered = events.filter(ev =>
+        ev.title.toLowerCase().includes(search) ||
+        ev.category.toLowerCase().includes(search)
+      );
+
+      sectionsContainer.innerHTML = ''; // Clear previous content
+
+      if (filtered.length === 0) {
+        sectionsContainer.innerHTML = '<p class="small">No events match your search.</p>';
+        return;
+      }
+
+      const grouped = groupByCategory(filtered);
+
+      Object.keys(grouped).forEach(category => {
+        // Category header
+        const section = document.createElement('section');
+        section.innerHTML = `<h2>${category}</h2>`;
+
+        // Row of cards
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.flexWrap = 'wrap';
+        row.style.gap = '18px';
+
+        grouped[category].forEach(ev => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.style.width = '220px';
+
+          card.innerHTML = `
+            <img src="${ev.img}" style="width:100%;height:120px;object-fit:cover">
+            <h3>${ev.title}</h3>
+            <button class="btn btn-primary"
+              onclick="location.href='event.html?event=${encodeURIComponent(ev.title)}'">
+              View Tickets
+            </button>
+          `;
+
+          row.appendChild(card);
+        });
+
+        section.appendChild(row);
+        sectionsContainer.appendChild(section);
+      });
+    }
+
+    // initial page load
+    renderEvents();
+
+    // search filter
+    searchInput.addEventListener('input', (e) => {
+      renderEvents(e.target.value);
+    });
+  </script>
+
+</body>
 </html>
 

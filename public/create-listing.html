@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Create Trade — Dawg Tickets</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="create-listing-page">
+  <!-- nav -->
+  <header>
+    <div class="logo">
+      <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
+      <div>Dawg-Tickets</div>
+    </div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="index.html#events">Events</a>
+      <a href="your-trades.html">Your Trades</a>
+      <a href="trade-history.html">Trade History</a>
+      <a href="create-listing.html">+ Create Trade</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="page-title">Create Trade</div>
+    <div class="page-subtitle">
+      Select ticket category to view available events to trade.
+    </div>
+
+    <form id="createForm" class="form-section">
+      <!-- Ticket Category -->
+      <div class="field-label">Ticket Category*</div>
+      <select id="category" name="category" class="pill-select" required>
+        <option value="">Select a category</option>
+        <option value="UGA Football">UGA Football</option>
+        <option value="UGA Basketball">UGA Basketball</option>
+        <option value="UGA Baseball">UGA Baseball</option>
+        <option value="UGA Gymnastics">Gymdawgs</option>
+      </select>
+
+      <!-- Event -->
+      <div class="field-label">Event*</div>
+      <select id="event" name="event" class="pill-select" required disabled>
+        <option value="">Select an event</option>
+      </select>
+      <div class="helper-text">Choose a category first to unlock this field.</div>
+
+      <!-- Seat Number -->
+      <div class="field-label">Seat Number*</div>
+      <input
+        id="seat"
+        name="seat"
+        class="pill-input"
+        type="text"
+        placeholder="Section, row, seat (e.g., 102, Row 4, Seat 7)"
+        required
+        disabled
+      />
+
+      <!-- Preferred Trade -->
+      <div class="field-label">Preferred Trade (Optional)</div>
+      <select id="preferredTrade" name="preferredTrade" class="pill-select" disabled>
+        <option value="">No preference</option>
+      </select>
+
+      <div class="helper-text">
+        We’ll try to match you with this event, but it’s not guaranteed.
+      </div>
+
+      <!-- Ticket Number -->
+      <div class="field-label">Ticket Number*</div>
+      <input
+        id="ticketNumber"
+        name="ticketNumber"
+        class="pill-input"
+        type="text"
+        placeholder="Enter the ticket ID or number"
+        required
+        disabled
+      />
+      <div id="ticketMessage" class="helper-text">
+        This will be used later by admin to verify that the ticket is real.
+      </div>
+
+      <!-- Buttons -->
+      <div class="btn-row">
+        <button type="button" class="btn" onclick="window.location.href='index.html'">
+          Cancel
+        </button>
+        <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
+          Create Trade
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const EVENT_CATALOG = [
+      { id: 'fb-marshall', title: 'FB: Georgia v. Marshall', category: 'UGA Football' },
+      { id: 'fb-alabama', title: 'FB: Georgia v. Alabama', category: 'UGA Football' },
+      { id: 'fb-tech', title: 'FB: Georgia v. Tech', category: 'UGA Football' },
+
+      { id: 'bb-kentucky', title: 'MBB: Georgia v. Kentucky', category: 'UGA Basketball' },
+      { id: 'bb-auburn', title: 'MBB: Georgia v. Auburn', category: 'UGA Basketball' },
+      { id: 'bb-tennessee', title: 'MBB: Georgia v. Tennessee', category: 'UGA Basketball' },
+
+      { id: 'bsb-florida', title: 'BSB: Georgia v. Florida', category: 'UGA Baseball' },
+      { id: 'bsb-auburn', title: 'BSB: Georgia v. Auburn', category: 'UGA Baseball' },
+
+      { id: 'gym-alabama', title: 'Gym: Georgia v. Alabama', category: 'UGA Gymnastics' }
+    ];
+
+    const categorySelect = document.getElementById('category');
+    const eventSelect = document.getElementById('event');
+    const seatInput = document.getElementById('seat');
+    const preferredSelect = document.getElementById('preferredTrade');
+    const ticketInput = document.getElementById('ticketNumber');
+    const submitBtn = document.getElementById('submitBtn');
+
+    categorySelect.addEventListener('change', () => {
+      const category = categorySelect.value;
+
+      eventSelect.innerHTML = '<option value="">Select an event</option>';
+      preferredSelect.innerHTML = '<option value="">No preference</option>';
+      eventSelect.disabled = true;
+      seatInput.disabled = true;
+      preferredSelect.disabled = true;
+      ticketInput.disabled = true;
+      submitBtn.disabled = true;
+
+      if (!category) return;
+
+      EVENT_CATALOG.filter(ev => ev.category === category)
+        .forEach(ev => {
+          const opt = document.createElement('option');
+          opt.value = ev.title;
+          opt.textContent = ev.title;
+          eventSelect.appendChild(opt);
+        });
+
+      eventSelect.disabled = false;
+    });
+
+    eventSelect.addEventListener('change', () => {
+      const hasEvent = !!eventSelect.value;
+      seatInput.disabled = !hasEvent;
+
+      preferredSelect.innerHTML = '<option value="">No preference</option>';
+      const category = categorySelect.value;
+
+      EVENT_CATALOG.filter(ev => ev.category === category)
+        .forEach(ev => {
+          const opt = document.createElement('option');
+          opt.value = ev.title;
+          opt.textContent = ev.title;
+          preferredSelect.appendChild(opt);
+        });
+
+      preferredSelect.disabled = !hasEvent;
+
+      updateSubmitState();
+    });
+
+    seatInput.addEventListener('input', () => {
+      ticketInput.disabled = seatInput.value.trim() === '';
+      updateSubmitState();
+    });
+
+    ticketInput.addEventListener('input', () => {
+      updateSubmitState();
+    });
+
+    function updateSubmitState() {
+      const ready =
+        categorySelect.value &&
+        eventSelect.value &&
+        seatInput.value.trim() &&
+        ticketInput.value.trim();
+
+      submitBtn.disabled = !ready;
+    }
+  </script>
+
+</body>
+</html>
+
