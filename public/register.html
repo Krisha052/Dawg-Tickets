@@ -46,6 +46,12 @@
       font-size: 14px;
       display: block;
     }
+    .error-message {
+      color: #b30000;
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -67,6 +73,7 @@
         <input name="thePassword" type="password" placeholder="Password" required>
         <input name="theConfirmPassword" type="password" placeholder="Re-type Password" required>
         <button type="submit" class="auth-btn">Register</button>
+        <div id="theError" class="error-message"></div>
       </form>
 
       <a href="login.html" class="auth-link">Already have an account? Log in</a>
@@ -75,18 +82,25 @@
 
 <script>
 const theBACKEND_URL = "http://localhost:3000";
+const theErrorBox = document.getElementById('theError');
 
 document.getElementById('theRegForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  theErrorBox.textContent = ""; // clear previous errors
 
   const fd = new FormData(e.target);
-  const username = fd.get('theUsername');
-  const email = fd.get('theEmail');
+  const username = fd.get('theUsername')?.trim();
+  const email = fd.get('theEmail')?.trim();
   const password = fd.get('thePassword');
   const confirm = fd.get('theConfirmPassword');
 
+  if (!username || !email || !password || !confirm) {
+    theErrorBox.textContent = "All fields are required.";
+    return;
+  }
+
   if (password !== confirm) {
-    alert("Passwords do not match!");
+    theErrorBox.textContent = "Passwords do not match.";
     return;
   }
 
@@ -103,11 +117,11 @@ document.getElementById('theRegForm').addEventListener('submit', async (e) => {
       localStorage.setItem('token', data.token);
       location.href = 'index.html#events';
     } else {
-      alert(data.error || "Registration failed.");
+      theErrorBox.textContent = data.error || "Registration failed.";
     }
   } catch (err) {
-    console.error(err);
-    alert("Could not connect to backend.");
+    console.error("Network error:", err);
+    theErrorBox.textContent = "Could not connect to backend.";
   }
 });
 </script>
