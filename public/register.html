@@ -55,14 +55,6 @@
       <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
       <div>Dawg-Tickets</div>
     </div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="events.html">Events</a>
-      <a href="your-trades.html">Your Trades</a>
-      <a href="trade-history.html">Trade History</a>
-      <a href="create-listing.html">+ Create Trade</a>
-      <a href="/login">Login</a>
-    </nav>
   </header>
 
   <div class="auth-page">
@@ -84,36 +76,38 @@
 <script>
 const theBACKEND_URL = "http://localhost:3000";
 
-document.getElementById('theRegForm').addEventListener('submit', async (theE) => {
-  theE.preventDefault();
+document.getElementById('theRegForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  const theFd = new FormData(theE.target);
-  const theUsername = theFd.get('theUsername');
-  const theEmail = theFd.get('theEmail');
-  const thePassword = theFd.get('thePassword');
-  const theConfirm = theFd.get('theConfirmPassword');
+  const fd = new FormData(e.target);
+  const username = fd.get('theUsername');
+  const email = fd.get('theEmail');
+  const password = fd.get('thePassword');
+  const confirm = fd.get('theConfirmPassword');
 
-  if (thePassword !== theConfirm) {
+  if (password !== confirm) {
+    alert("Passwords do not match!");
     return;
   }
 
   try {
-    const theRes = await fetch(`${theBACKEND_URL}/api/auth/register`, {
+    const res = await fetch(`${theBACKEND_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: theUsername, email: theEmail, password: thePassword })
+      body: JSON.stringify({ username, email, password })
     });
 
-    const theData = await theRes.json();
+    const data = await res.json();
 
-    if (theRes.ok) {
-      localStorage.setItem('token', theData.token);
+    if (res.ok) {
+      localStorage.setItem('token', data.token);
       location.href = 'index.html#events';
     } else {
-      console.error(theData.error || "Registration failed.");
+      alert(data.error || "Registration failed.");
     }
-  } catch (theErr) {
-    console.error(theErr);
+  } catch (err) {
+    console.error(err);
+    alert("Could not connect to backend.");
   }
 });
 </script>
