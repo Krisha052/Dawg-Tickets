@@ -51,30 +51,20 @@
 
 <body>
 
-  <!-- NAV BAR -->
   <header>
     <div class="logo">
       <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
       <div>Dawg-Tickets</div>
     </div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="index.html#events">Events</a>
-      <a href="your-trades.html">Your Trades</a>
-      <a href="trade-history.html">Trade History</a>
-      <a href="create-listing.html">+ Create Trade</a>
-      <a href="/register">Create Account</a>
-    </nav>
   </header>
 
-  <!-- LOGIN FORM -->
   <div class="auth-page">
     <div class="auth-card">
       <h2>Login</h2>
 
-      <form id="formLogin">
-        <input type="email" name="email" placeholder="UGA email" required>
-        <input type="password" name="password" placeholder="Password" required>
+      <form id="theFormLogin">
+        <input type="email" name="theEmail" placeholder="UGA email" required>
+        <input type="password" name="thePassword" placeholder="Password" required>
         <button type="submit" class="auth-btn">Log In</button>
       </form>
 
@@ -83,37 +73,32 @@
   </div>
 
 <script>
-// ----------------------
-// LOGIN LOGIC
-// ----------------------
-document.getElementById("formLogin").addEventListener("submit", async (e) => {
-  e.preventDefault();
+const theBACKEND_URL = "http://localhost:3000";
 
-  const fd = new FormData(e.target);
-  const email = fd.get("email");
-  const password = fd.get("password");
+document.getElementById("theFormLogin").addEventListener("submit", async (theE) => {
+  theE.preventDefault();
+
+  const theFd = new FormData(theE.target);
+  const theEmail = theFd.get("theEmail");
+  const thePassword = theFd.get("thePassword");
 
   try {
-    const res = await fetch("/api/auth/login", {
+    const theRes = await fetch(`${theBACKEND_URL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email: theEmail, password: thePassword })
     });
 
-    const data = await res.json();
+    const theData = await theRes.json();
 
-    if (res.ok) {
-      // Save JWT token
-      localStorage.setItem("token", data.token);
-      alert("Logged in!");
-      // Redirect to events/home
+    if (theRes.ok) {
+      localStorage.setItem("token", theData.token);
       location.href = "index.html#events";
     } else {
-      alert(data.error || "Login failed.");
+      console.error(theData.error || "Login failed.");
     }
-  } catch (err) {
-    console.error(err);
-    alert("Server error. Please try again later.");
+  } catch (theErr) {
+    console.error(theErr);
   }
 });
 </script>

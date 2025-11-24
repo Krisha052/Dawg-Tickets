@@ -27,7 +27,7 @@ rel="stylesheet" href="styles.css"></head><body>
 <script>
 async function loadHistory(){
   const token = localStorage.getItem('token');
-  if(!token) return alert('Login to view trade history.');
+  if(!token) return;
   const res = await fetch('/api/trades', { headers: { Authorization: 
 'Bearer ' + token } });
   const trades = await res.json();
@@ -46,8 +46,7 @@ const logoutLink = document.getElementById("logoutLink");
 if (logoutLink) {
   logoutLink.addEventListener("click", () => {
     localStorage.removeItem("token");
-    alert("Logged out!");
-    location.href = "index.html";
+    location.href = "login.html";
   });
 }
 </script>

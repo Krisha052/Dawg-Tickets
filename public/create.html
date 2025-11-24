@@ -49,39 +49,15 @@
   </style>
 </head>
 
-<<<<<<< HEAD
-
-<body class="auth">
-  <div class="the-container">
-    <h2>Create Account</h2>
-        <form id="formCreate">
-            <input type="email" name="email" placeholder="UGA email" required>
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <input type="password" name="confirmPassword" placeholder="Re-type password" required>
-        <button type="submit" class="the-btn">Create account</button>
-        </form>
-        <a href="index.html" class="the-account-link">Back</a>
-=======
 <body>
 
-  <!-- NAV BAR -->
   <header>
     <div class="logo">
       <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
       <div>Dawg-Tickets</div>
     </div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="index.html#events">Events</a>
-      <a href="your-trades.html">Your Trades</a>
-      <a href="trade-history.html">Trade History</a>
-      <a href="create-listing.html">+ Create Trade</a>
-    </nav>
   </header>
 
-
-  <!-- AUTH FORM -->
   <div class="auth-page">
     <div class="auth-card">
       <h2>Create Account</h2>
@@ -97,13 +73,9 @@
 
       <a href="login.html" class="auth-link">Already have an account? Log in</a>
     </div>
->>>>>>> cdfa5875a251d5da56ea416b282c213a1c83b2d7
   </div>
 
 <script>
-// ----------------------
-// CREATE ACCOUNT LOGIC
-// ----------------------
 document.getElementById("formCreate").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -129,7 +101,7 @@ document.getElementById("formCreate").addEventListener("submit", async (e) => {
   if (res.ok) {
     localStorage.setItem("token", data.token);
     alert("Account created!");
-    location.href = "index.html#events"; // redirect to homepage
+    location.href = "index.html#events";
   } else {
     alert(data.error || "Registration failed.");
   }
@@ -138,4 +110,3 @@ document.getElementById("formCreate").addEventListener("submit", async (e) => {
 
 </body>
 </html>
-

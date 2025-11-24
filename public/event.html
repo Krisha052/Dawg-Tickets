@@ -52,7 +52,7 @@ Request</button></td>
     btn.addEventListener('click', async (e)=>{
       const listingId = e.target.dataset.id;
       const token = localStorage.getItem('token');
-      if(!token) return alert('Please login to send a trade request.');
+      if(!token) return;
       const res = await fetch('/api/trades', {
         method:'POST',
         headers:{ 'Content-Type':'application/json', 
@@ -61,9 +61,8 @@ Request</button></td>
       });
       const json = await res.json();
       if (res.ok) {
-        alert('Trade requested: ' + json.tradeId);
         location.reload();
-      } else alert(json.error || JSON.stringify(json));
+      } else console.error(json.error || JSON.stringify(json));
     });
   });
 }
@@ -73,8 +72,7 @@ const logoutLink = document.getElementById("logoutLink");
 if (logoutLink) {
   logoutLink.addEventListener("click", () => {
     localStorage.removeItem("token");
-    alert("Logged out!");
-    location.href = "index.html";
+    location.href = "login.html";
   });
 }
 </script>

@@ -168,7 +168,6 @@
     async function createListing(theListingData) {
       const theToken = localStorage.getItem("token");
       if (!theToken) {
-        alert("You must log in first!");
         return;
       }
       const theRes = await fetch("/api/listings", {
@@ -181,10 +180,9 @@
       });
       const theData = await theRes.json();
       if (theRes.ok) {
-        alert("Listing created!");
         location.href = "index.html#events";
       } else {
-        alert(theData.error || "Failed to create listing.");
+        console.error(theData.error || "Failed to create listing.");
       }
     }
 
@@ -205,8 +203,7 @@
     if (logoutLink) {
       logoutLink.addEventListener("click", () => {
         localStorage.removeItem("token");
-        alert("Logged out!");
-        location.href = "index.html";
+        location.href = "login.html";
       });
     }
   </script>

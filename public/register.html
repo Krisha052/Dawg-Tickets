@@ -50,7 +50,6 @@
 </head>
 <body>
 
-  <!-- NAV BAR -->
   <header>
     <div class="logo">
       <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
@@ -66,16 +65,15 @@
     </nav>
   </header>
 
-  <!-- REGISTER FORM -->
   <div class="auth-page">
     <div class="auth-card">
       <h2>Create Account</h2>
 
-      <form id="regForm">
-        <input name="username" placeholder="Username" required>
-        <input name="email" type="email" placeholder="UGA email" required>
-        <input name="password" type="password" placeholder="Password" required>
-        <input name="confirmPassword" type="password" placeholder="Re-type Password" required>
+      <form id="theRegForm">
+        <input name="theUsername" placeholder="Username" required>
+        <input name="theEmail" type="email" placeholder="UGA email" required>
+        <input name="thePassword" type="password" placeholder="Password" required>
+        <input name="theConfirmPassword" type="password" placeholder="Re-type Password" required>
         <button type="submit" class="auth-btn">Register</button>
       </form>
 
@@ -84,44 +82,38 @@
   </div>
 
 <script>
-// ----------------------
-// REGISTER LOGIC
-// ----------------------
-document.getElementById('regForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
+const theBACKEND_URL = "http://localhost:3000";
 
-  const fd = new FormData(e.target);
-  const username = fd.get('username');
-  const email = fd.get('email');
-  const password = fd.get('password');
-  const confirm = fd.get('confirmPassword');
+document.getElementById('theRegForm').addEventListener('submit', async (theE) => {
+  theE.preventDefault();
 
-  if (password !== confirm) {
-    alert("Passwords do not match!");
+  const theFd = new FormData(theE.target);
+  const theUsername = theFd.get('theUsername');
+  const theEmail = theFd.get('theEmail');
+  const thePassword = theFd.get('thePassword');
+  const theConfirm = theFd.get('theConfirmPassword');
+
+  if (thePassword !== theConfirm) {
     return;
   }
 
   try {
-    const res = await fetch('/api/auth/register', {
+    const theRes = await fetch(`${theBACKEND_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify({ username: theUsername, email: theEmail, password: thePassword })
     });
 
-    const data = await res.json();
+    const theData = await theRes.json();
 
-    if (res.ok) {
-      // Save JWT token
-      localStorage.setItem('token', data.token);
-      alert('Account created!');
-      // Redirect to events/home
+    if (theRes.ok) {
+      localStorage.setItem('token', theData.token);
       location.href = 'index.html#events';
     } else {
-      alert(data.error || "Registration failed.");
+      console.error(theData.error || "Registration failed.");
     }
-  } catch (err) {
-    console.error(err);
-    alert("Server error. Please try again later.");
+  } catch (theErr) {
+    console.error(theErr);
   }
 });
 </script>

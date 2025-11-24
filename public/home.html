@@ -17,6 +17,7 @@
                 <a href="events.html">Events</a>
                 <a href="yourtrades.html">Your Trades</a>
                 <a href="tradehistory.html">Trade History</a>
+                <a href="#" id="logoutLink">Logout</a>
             </div>
             <div class="nav-spacer"></div>
             <div class="search">
@@ -33,5 +34,15 @@
         </div>
         <section id="sportGrid" class="grid"></section>
     </main>
+
+    <script>
+        const logoutLink = document.getElementById("logoutLink");
+        if (logoutLink) {
+          logoutLink.addEventListener("click", () => {
+            localStorage.removeItem("token");
+            location.href = "login.html";
+          });
+        }
+    </script>
 </body>
 </html>

@@ -1,22 +1,64 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f2f2f2;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+:root {
+  --brand: #b30000;
+  --nav-height: 72px;
+}
+* { box-sizing: border-box; }
+body { font-family: "Helvetica Neue", Arial, sans-serif; margin:0; 
+color:#111; background:#fff; }
+header { background:var(--brand); color:white; padding:10px 24px; 
+display:flex; align-items:center; gap:20px; }
+header .logo { display:flex; align-items:center; gap:10px; 
+font-weight:700; font-size:20px; }
+nav { margin-left:auto; display:flex; gap:24px; align-items:center; }
+nav a { color:white; text-decoration:none; font-weight:600; }
+.container { max-width:1100px; margin:32px auto; padding:0 16px; }
+h1 { font-size:32px; margin: 8px 0 20px; }
+
+/* Two-column layout for dashboard */
+.grid-2 { display:grid; grid-template-columns: 1fr 1fr; gap:36px; 
+align-items:start; }
+
+/* tables */
+.table { width:100%; border-collapse:collapse; }
+.table th, .table td { border:1px solid #ddd; padding:12px; 
+text-align:left; }
+.table th { background:#f3f3f3; font-weight:700; }
+
+/* cards */
+.card { background:#fff; border:1px solid #eee; padding:16px; }
+
+/* Buttons */
+.btn { display:inline-block; padding:10px 16px; border:1px solid #ccc; 
+background:#fff; cursor:pointer; }
+.btn-primary { background:var(--brand); color:white; border:none; }
+.btn-danger { background:#b30000; color:white; border:none; }
+
+/* forms */
+.form-row { margin:12px 0; }
+input[type="text"], input[type="number"], input[type="password"], select {
+  width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;
 }
 
-.the-container {
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    width: 300px;
-    text-align: center;
+/* small utilities */
+.right { text-align:right; }
+.small { font-size:0.9rem; color:#666; }
+
+/* ============================================================
+   CREATE LISTING PAGE — SCOPED STYLES
+   Applies only inside .create-listing-page
+   ============================================================ */
+
+.create-listing-page .page-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 24px;
+  margin-bottom: 8px;
 }
 
-.the-container h2 {
-    margin-bottom: 20px;
+.create-listing-page .page-subtitle {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 24px;
 }
 
 .create-listing-page .form-section {
@@ -124,11 +166,10 @@ body {
   cursor: pointer;
 }
 
-.the-account-link {
-    margin-top: 15px;
-    color: #3498db;
-}
-
-.the-account-link:hover {
-    text-decoration: underline;
+.your-trades-page .btn-remove {
+  background: #b30000;
+  color: #fff;
+  padding: 6px 12px;
+  border: none;
+  cursor: pointer;
 }

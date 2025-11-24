@@ -55,7 +55,6 @@
     async function loadYourTrades() {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("Please login first.");
         return;
       }
 
@@ -89,8 +88,6 @@
 
       document.querySelectorAll(".btn-remove").forEach((btn) => {
         btn.addEventListener("click", async () => {
-          if (!confirm("Remove this listing?")) return;
-
           const res = await fetch("/api/listings/" + btn.dataset.id, {
             method: "DELETE",
             headers: { Authorization: "Bearer " + token }
@@ -155,8 +152,7 @@
     if (logoutLink) {
       logoutLink.addEventListener("click", () => {
         localStorage.removeItem("token");
-        alert("Logged out!");
-        location.href = "index.html";
+        location.href = "login.html";
       });
     }
   </script>
