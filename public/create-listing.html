@@ -7,7 +7,6 @@
 </head>
 
 <body class="create-listing-page">
-  <!-- nav -->
   <header>
     <div class="logo">
       <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
@@ -19,6 +18,9 @@
       <a href="your-trades.html">Your Trades</a>
       <a href="trade-history.html">Trade History</a>
       <a href="create-listing.html">+ Create Trade</a>
+      <a href="/login">Login</a>
+      <a href="/register">Create Account</a>
+      <a href="#" id="logoutLink">Logout</a>
     </nav>
   </header>
 
@@ -29,7 +31,6 @@
     </div>
 
     <form id="createForm" class="form-section">
-      <!-- Ticket Category -->
       <div class="field-label">Ticket Category*</div>
       <select id="category" name="category" class="pill-select" required>
         <option value="">Select a category</option>
@@ -39,14 +40,12 @@
         <option value="UGA Gymnastics">Gymdawgs</option>
       </select>
 
-      <!-- Event -->
       <div class="field-label">Event*</div>
       <select id="event" name="event" class="pill-select" required disabled>
         <option value="">Select an event</option>
       </select>
       <div class="helper-text">Choose a category first to unlock this field.</div>
 
-      <!-- Seat Number -->
       <div class="field-label">Seat Number*</div>
       <input
         id="seat"
@@ -58,7 +57,6 @@
         disabled
       />
 
-      <!-- Preferred Trade -->
       <div class="field-label">Preferred Trade (Optional)</div>
       <select id="preferredTrade" name="preferredTrade" class="pill-select" disabled>
         <option value="">No preference</option>
@@ -68,7 +66,6 @@
         We’ll try to match you with this event, but it’s not guaranteed.
       </div>
 
-      <!-- Ticket Number -->
       <div class="field-label">Ticket Number*</div>
       <input
         id="ticketNumber"
@@ -83,7 +80,6 @@
         This will be used later by admin to verify that the ticket is real.
       </div>
 
-      <!-- Buttons -->
       <div class="btn-row">
         <button type="button" class="btn" onclick="window.location.href='index.html'">
           Cancel
@@ -100,14 +96,11 @@
       { id: 'fb-marshall', title: 'FB: Georgia v. Marshall', category: 'UGA Football' },
       { id: 'fb-alabama', title: 'FB: Georgia v. Alabama', category: 'UGA Football' },
       { id: 'fb-tech', title: 'FB: Georgia v. Tech', category: 'UGA Football' },
-
       { id: 'bb-kentucky', title: 'MBB: Georgia v. Kentucky', category: 'UGA Basketball' },
       { id: 'bb-auburn', title: 'MBB: Georgia v. Auburn', category: 'UGA Basketball' },
       { id: 'bb-tennessee', title: 'MBB: Georgia v. Tennessee', category: 'UGA Basketball' },
-
       { id: 'bsb-florida', title: 'BSB: Georgia v. Florida', category: 'UGA Baseball' },
       { id: 'bsb-auburn', title: 'BSB: Georgia v. Auburn', category: 'UGA Baseball' },
-
       { id: 'gym-alabama', title: 'Gym: Georgia v. Alabama', category: 'UGA Gymnastics' }
     ];
 
@@ -120,7 +113,6 @@
 
     categorySelect.addEventListener('change', () => {
       const category = categorySelect.value;
-
       eventSelect.innerHTML = '<option value="">Select an event</option>';
       preferredSelect.innerHTML = '<option value="">No preference</option>';
       eventSelect.disabled = true;
@@ -128,9 +120,7 @@
       preferredSelect.disabled = true;
       ticketInput.disabled = true;
       submitBtn.disabled = true;
-
       if (!category) return;
-
       EVENT_CATALOG.filter(ev => ev.category === category)
         .forEach(ev => {
           const opt = document.createElement('option');
@@ -138,17 +128,14 @@
           opt.textContent = ev.title;
           eventSelect.appendChild(opt);
         });
-
       eventSelect.disabled = false;
     });
 
     eventSelect.addEventListener('change', () => {
       const hasEvent = !!eventSelect.value;
       seatInput.disabled = !hasEvent;
-
       preferredSelect.innerHTML = '<option value="">No preference</option>';
       const category = categorySelect.value;
-
       EVENT_CATALOG.filter(ev => ev.category === category)
         .forEach(ev => {
           const opt = document.createElement('option');
@@ -156,9 +143,7 @@
           opt.textContent = ev.title;
           preferredSelect.appendChild(opt);
         });
-
       preferredSelect.disabled = !hasEvent;
-
       updateSubmitState();
     });
 
@@ -177,11 +162,54 @@
         eventSelect.value &&
         seatInput.value.trim() &&
         ticketInput.value.trim();
-
       submitBtn.disabled = !ready;
+    }
+
+    async function createListing(theListingData) {
+      const theToken = localStorage.getItem("token");
+      if (!theToken) {
+        alert("You must log in first!");
+        return;
+      }
+      const theRes = await fetch("/api/listings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + theToken
+        },
+        body: JSON.stringify(theListingData)
+      });
+      const theData = await theRes.json();
+      if (theRes.ok) {
+        alert("Listing created!");
+        location.href = "index.html#events";
+      } else {
+        alert(theData.error || "Failed to create listing.");
+      }
+    }
+
+    document.getElementById("createForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const theListingData = {
+        category: fd.get("category"),
+        event: fd.get("event"),
+        seat: fd.get("seat"),
+        ticketNumber: fd.get("ticketNumber"),
+        preferredTrade: fd.get("preferredTrade")
+      };
+      await createListing(theListingData);
+    });
+
+    const logoutLink = document.getElementById("logoutLink");
+    if (logoutLink) {
+      logoutLink.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        alert("Logged out!");
+        location.href = "index.html";
+      });
     }
   </script>
 
 </body>
 </html>
-

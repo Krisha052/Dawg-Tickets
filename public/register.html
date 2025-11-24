@@ -1,45 +1,130 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Register</title><link 
-rel="stylesheet" href="styles.css"></head><body>
-<header>
-  <div class="logo">
-    <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
-    <div>Dawg-Tickets</div>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Register — Dawg Tickets</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .auth-page {
+      display: flex;
+      justify-content: center;
+      padding-top: 60px;
+    }
+    .auth-card {
+      width: 380px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .auth-card h2 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .auth-card input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    .auth-btn {
+      width: 100%;
+      background: #b30000;
+      color: #fff;
+      padding: 11px;
+      border: none;
+      border-radius: 6px;
+      margin-top: 12px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .auth-link {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 14px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV BAR -->
+  <header>
+    <div class="logo">
+      <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
+      <div>Dawg-Tickets</div>
+    </div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="your-trades.html">Your Trades</a>
+      <a href="trade-history.html">Trade History</a>
+      <a href="create-listing.html">+ Create Trade</a>
+      <a href="/login">Login</a>
+    </nav>
+  </header>
+
+  <!-- REGISTER FORM -->
+  <div class="auth-page">
+    <div class="auth-card">
+      <h2>Create Account</h2>
+
+      <form id="regForm">
+        <input name="username" placeholder="Username" required>
+        <input name="email" type="email" placeholder="UGA email" required>
+        <input name="password" type="password" placeholder="Password" required>
+        <input name="confirmPassword" type="password" placeholder="Re-type Password" required>
+        <button type="submit" class="auth-btn">Register</button>
+      </form>
+
+      <a href="login.html" class="auth-link">Already have an account? Log in</a>
+    </div>
   </div>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="events.html">Events</a>
-    <a href="your-trades.html">Your Trades</a>
-    <a href="trade-history.html">Trade History</a>
-    <a href="create-listing.html">+ Create Trade</a>
-  </nav>
-</header>
-<div class="container">
-  <h1>Sign Up</h1>
-  <form id="regForm">
-    <div class="form-row"><input name="username" placeholder="Username" 
-required></div>
-    <div class="form-row"><input name="email" type="email" 
-placeholder="Email" required></div>
-    <div class="form-row"><input name="password" type="password" 
-placeholder="Password" required></div>
-    <div class="form-row"><button class="btn 
-btn-primary">Register</button></div>
-  </form>
-</div>
+
 <script>
-document.getElementById('regForm').addEventListener('submit', async (e)=>{
+// ----------------------
+// REGISTER LOGIC
+// ----------------------
+document.getElementById('regForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+
   const fd = new FormData(e.target);
-  const body = { username: fd.get('username'), email: fd.get('email'), 
-password: fd.get('password') };
-  const res = await fetch('/api/auth/register', { method:'POST', headers:{ 
-'Content-Type':'application/json' }, body: JSON.stringify(body) });
-  const j = await res.json();
-  if (res.ok) { localStorage.setItem('token', j.token); 
-alert('Registered'); location.href='/'; }
-  else alert(j.error || JSON.stringify(j));
+  const username = fd.get('username');
+  const email = fd.get('email');
+  const password = fd.get('password');
+  const confirm = fd.get('confirmPassword');
+
+  if (password !== confirm) {
+    alert("Passwords do not match!");
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Save JWT token
+      localStorage.setItem('token', data.token);
+      alert('Account created!');
+      // Redirect to events/home
+      location.href = 'index.html#events';
+    } else {
+      alert(data.error || "Registration failed.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server error. Please try again later.");
+  }
 });
 </script>
-</body></html>
 
+</body>
+</html>

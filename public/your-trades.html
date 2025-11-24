@@ -8,7 +8,6 @@
 
 <body class="your-trades-page">
 
-  <!-- nav -->
   <header>
     <div class="logo">
       <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
@@ -20,6 +19,7 @@
       <a href="your-trades.html">Your Trades</a>
       <a href="trade-history.html">Trade History</a>
       <a href="create-listing.html">+ Create Trade</a>
+      <a href="#" id="logoutLink">Logout</a>
     </nav>
   </header>
 
@@ -62,7 +62,6 @@
       const user = JSON.parse(localStorage.getItem("user"));
       document.getElementById("username-display").textContent = user?.username || "";
 
-      //Fetch your listings
       const listingsRes = await fetch("/api/listings/my-listings", {
         headers: { Authorization: "Bearer " + token }
       });
@@ -101,7 +100,6 @@
         });
       });
 
-      //Fetch all trades involving you
       const tradesRes = await fetch("/api/trades", {
         headers: { Authorization: "Bearer " + token }
       });
@@ -152,8 +150,16 @@
     }
 
     loadYourTrades();
+
+    const logoutLink = document.getElementById("logoutLink");
+    if (logoutLink) {
+      logoutLink.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        alert("Logged out!");
+        location.href = "index.html";
+      });
+    }
   </script>
 
 </body>
 </html>
-
