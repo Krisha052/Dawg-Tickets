@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Create Account — Dawg Tickets</title>
+  <title>Login — Dawg Tickets</title>
   <link rel="stylesheet" href="styles.css">
   <style>
     .auth-page {
@@ -49,20 +49,6 @@
   </style>
 </head>
 
-<<<<<<< HEAD
-
-<body class="auth">
-  <div class="the-container">
-    <h2>Create Account</h2>
-        <form id="formCreate">
-            <input type="email" name="email" placeholder="UGA email" required>
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <input type="password" name="confirmPassword" placeholder="Re-type password" required>
-        <button type="submit" class="the-btn">Create account</button>
-        </form>
-        <a href="index.html" class="the-account-link">Back</a>
-=======
 <body>
 
   <!-- NAV BAR -->
@@ -81,57 +67,46 @@
   </header>
 
 
-  <!-- AUTH FORM -->
+  <!-- LOGIN FORM -->
   <div class="auth-page">
     <div class="auth-card">
-      <h2>Create Account</h2>
+      <h2>Login</h2>
 
-      <form id="formCreate">
+      <form id="formLogin">
         <input type="email" name="email" placeholder="UGA email" required>
-        <input type="text" name="username" placeholder="Username" required>
         <input type="password" name="password" placeholder="Password" required>
-        <input type="password" name="confirmPassword" placeholder="Re-type Password" required>
-
-        <button type="submit" class="auth-btn">Create Account</button>
+        <button type="submit" class="auth-btn">Log In</button>
       </form>
 
-      <a href="login.html" class="auth-link">Already have an account? Log in</a>
+      <a href="create.html" class="auth-link">Don't have an account? Create one</a>
     </div>
->>>>>>> cdfa5875a251d5da56ea416b282c213a1c83b2d7
   </div>
 
 <script>
 // ----------------------
-// CREATE ACCOUNT LOGIC
+// LOGIN LOGIC
 // ----------------------
-document.getElementById("formCreate").addEventListener("submit", async (e) => {
+document.getElementById("formLogin").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const fd = new FormData(e.target);
   const email = fd.get("email");
-  const username = fd.get("username");
   const password = fd.get("password");
-  const confirm = fd.get("confirmPassword");
 
-  if (password !== confirm) {
-    alert("Passwords do not match!");
-    return;
-  }
-
-  const res = await fetch("/api/auth/register", {
+  const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, username, password })
+    body: JSON.stringify({ email, password })
   });
 
   const data = await res.json();
 
   if (res.ok) {
     localStorage.setItem("token", data.token);
-    alert("Account created!");
-    location.href = "index.html#events"; // redirect to homepage
+    alert("Logged in!");
+    location.href = "index.html#events"; // redirect to home/events
   } else {
-    alert(data.error || "Registration failed.");
+    alert(data.error || "Login failed.");
   }
 });
 </script>

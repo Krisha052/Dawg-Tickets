@@ -1,0 +1,74 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Event Tickets</title><link 
+rel="stylesheet" href="styles.css"></head><body>
+  <!-- nav -->
+<header>
+  <div class="logo">
+    <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
+    <div>Dawg-Tickets</div>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#events">Events</a>
+    <a href="your-trades.html">Your Trades</a>
+    <a href="trade-history.html">Trade History</a>
+    <a href="create-listing.html">+ Create Trade</a>
+  </nav>
+</header>
+
+<div class="container">
+  <h1 id="event-title">Event</h1>
+
+  <table class="table" id="event-table">
+    <thead><tr><th>Username</th><th>Seat</th><th>Requested 
+Event</th><th>Action</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+async function loadEvent() {
+  const params = new URLSearchParams(location.search);
+  const event = params.get('event');
+  document.getElementById('event-title').textContent = event || 'Event';
+  // fetch listings filtered by event name
+  const res = await fetch('/api/listings?event=' + 
+encodeURIComponent(event || ''));
+  const listings = await res.json();
+  const tbody = document.querySelector('#event-table tbody');
+  tbody.innerHTML = '';
+  listings.forEach(l => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${l.seller?.username || 'Unknown'}</td>
+      <td>${l.seat || ''}</td>
+      <td>${l.event}</td>
+      <td><button class="btn btn-primary" data-id="${l._id}">Send Trade 
+Request</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.querySelectorAll('.btn-primary').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      const listingId = e.target.dataset.id;
+      const token = localStorage.getItem('token');
+      if(!token) return alert('Please login to send a trade request.');
+      const res = await fetch('/api/trades', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 
+'Authorization':'Bearer '+token },
+        body: JSON.stringify({ listingId })
+      });
+      const json = await res.json();
+      if (res.ok) {
+        alert('Trade requested: ' + json.tradeId);
+        location.reload();
+      } else alert(json.error || JSON.stringify(json));
+    });
+  });
+}
+loadEvent();
+</script>
+</body></html>
+

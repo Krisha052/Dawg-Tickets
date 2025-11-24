@@ -1,0 +1,47 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Trade History</title><link 
+rel="stylesheet" href="styles.css"></head><body>
+<!-- nav -->
+<header>
+  <div class="logo">
+    <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
+    <div>Dawg-Tickets</div>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#events">Events</a>
+    <a href="your-trades.html">Your Trades</a>
+    <a href="trade-history.html">Trade History</a>
+    <a href="create-listing.html">+ Create Trade</a>
+  </nav>
+</header>
+
+
+<div class="container">
+  <h1>Trade History</h1>
+  <table class="table" id="history">
+    <thead><tr><th>Trader Name</th><th>Date</th><th>Game 1</th><th>Game 
+2</th><th>Trade ID</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+<script>
+async function loadHistory(){
+  const token = localStorage.getItem('token');
+  if(!token) return alert('Login to view trade history.');
+  const res = await fetch('/api/trades', { headers: { Authorization: 
+'Bearer ' + token } });
+  const trades = await res.json();
+  const tbody = document.querySelector('#history tbody'); 
+tbody.innerHTML='';
+  trades.forEach(t=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${t.buyer?.username || ''}</td><td>${new 
+Date(t.createdAt).toLocaleString()}</td><td>${t.listing?.event}</td><td>-</td><td>${t.tradeId}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+loadHistory();
+</script>
+</body></html>
+

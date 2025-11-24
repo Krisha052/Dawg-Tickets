@@ -1,35 +1,37 @@
-// Load environment variables
 require('dotenv').config();
-
-// Import dependencies
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 
-// Create Express app
 const app = express();
 
 // Middleware
-app.use(express.json());            // Parse JSON bodies
-app.use(express.static('public'));  // Serve frontend files from public/
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));   // ✔️ Move this UP
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+// DB Connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-// Import routes
-const userRoutes = require('./routes/users');
-app.use('/api', userRoutes); // Use router correctly
+// Routes
+app.use('/api/users', require('./routes/users'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/listings', require('./routes/listings'));
+app.use('/api/trades', require('./routes/trades'));
 
-// Serve homepage
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
-});
+// Homepage route
+app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 
-// Start server
+// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
+
+
+
 
