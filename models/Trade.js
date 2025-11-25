@@ -10,9 +10,10 @@ const TradeSchema = new mongoose.Schema({
   seller:   { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   buyer:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
-  category: { type: String, required: true },  // ensure same sport
+  category: { type: String, required: true },
 
   status:   { type: String, enum:['pending','accepted','declined'], default:'pending' },
+
   createdAt:{ type: Date, default: Date.now }
 });
 

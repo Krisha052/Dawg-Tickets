@@ -2,20 +2,17 @@ const express = require('express');
 const router = express.Router();
 
 const Listing = require('../models/Listing');
-const ValidTicket = require('../models/ValidTicket');   // ⬅ NEW
+const ValidTicket = require('../models/ValidTicket');
 const auth = require('../middleware/auth');
-// const upload = require('../middleware/upload');      // ⬅ keep for later if you add images
 
 // ------------------------------------------------------------
-// GET all open listings (optionally filter by event query)
-// /api/listings?event=FB%3A%20Georgia%20v.%20Marshall
+// GET all open listings
 // ------------------------------------------------------------
 router.get('/', async (req, res) => {
   const { event } = req.query;
   const filter = { status: 'open' };
 
   if (event) {
-    // case-insensitive match on event name
     filter.event = new RegExp(event, 'i');
   }
 
@@ -23,10 +20,16 @@ router.get('/', async (req, res) => {
   res.json(listings);
 });
 
+// ------------------------------------------------------------
+// GET logged-in user's listings  <-- MUST come before '/:id'
+// ------------------------------------------------------------
+router.get('/my-listings', auth, async (req, res) => {
+  const listings = await Listing.find({ seller: req.user._id });
+  res.json(listings);
+});
 
 // ------------------------------------------------------------
 // GET listing by ID
-// /api/listings/:id
 // ------------------------------------------------------------
 router.get('/:id', async (req, res) => {
   const listing = await Listing.findById(req.params.id)
@@ -37,11 +40,8 @@ router.get('/:id', async (req, res) => {
   res.json(listing);
 });
 
-
 // ------------------------------------------------------------
-// CREATE LISTING (with ticket validation)
-// /api/listings   [POST]
-// body: { category, event, seat, preferredTrade?, ticketNumber }
+// CREATE LISTING (ticket validation)
 // ------------------------------------------------------------
 router.post('/', auth, async (req, res) => {
   try {
@@ -51,34 +51,24 @@ router.post('/', auth, async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
-    //Validate ticket number exists in official DB
     const ticket = await ValidTicket.findOne({ ticketNumber });
 
     if (!ticket) {
-      return res.status(400).json({
-        error: 'This ticket number is not recognized. Please check again.'
-      });
+      return res.status(400).json({ error: 'This ticket number is not recognized.' });
     }
 
-    //Validate category, event, and seat match the official record
     if (
       ticket.category !== category ||
       ticket.event !== event ||
       ticket.seat !== seat
     ) {
-      return res.status(400).json({
-        error: 'Ticket details do not match official UGA records.'
-      });
+      return res.status(400).json({ error: 'Ticket details do not match official UGA records.' });
     }
 
-   ⃣//Ensure ticket isn’t already used
     if (ticket.isUsed) {
-      return res.status(400).json({
-        error: 'This ticket has already been listed and cannot be reused.'
-      });
+      return res.status(400).json({ error: 'This ticket has already been listed.' });
     }
 
-    /⃣/Create the listing
     const listing = await Listing.create({
       seller: req.user._id,
       category,
@@ -88,7 +78,6 @@ router.post('/', auth, async (req, res) => {
       ticketNumber
     });
 
-    // Mark ticket as used
     ticket.isUsed = true;
     await ticket.save();
 
@@ -103,10 +92,8 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-
 // ------------------------------------------------------------
-// DELETE listing (owner only)
-// /api/listings/:id   [DELETE]
+// DELETE listing
 // ------------------------------------------------------------
 router.delete('/:id', auth, async (req, res) => {
   const listing = await Listing.findById(req.params.id);
@@ -120,10 +107,20 @@ router.delete('/:id', auth, async (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
 
+// ------------------------------------------------------------
+// GET LISTINGS THAT BELONG TO CURRENT USER
+// ------------------------------------------------------------
 router.get('/my-listings', auth, async (req, res) => {
-  const listings = await Listing.find({ seller: req.user._id });
-  res.json(listings);
+  try {
+    const listings = await Listing.find({ seller: req.user._id });
+    res.json(listings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
+
+
+module.exports = router;
 

@@ -26,6 +26,11 @@ Event</th><th>Action</th></tr></thead>
   </table>
 </div>
 
+<script src="auth.js"></script>
+<script>
+  requireAuth();
+</script>
+
 <script>
 async function loadEvent() {
   const params = new URLSearchParams(location.search);

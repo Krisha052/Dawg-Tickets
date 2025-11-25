@@ -82,6 +82,11 @@
     </div>
   </div>
 
+<script src="auth.js"></script>
+<script>
+  redirectIfAuthed();
+</script>
+
 <script>
 // ----------------------
 // LOGIN LOGIC
@@ -103,6 +108,7 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
 
   if (res.ok) {
     localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
     alert("Logged in!");
     location.href = "index.html#events"; // redirect to home/events
   } else {

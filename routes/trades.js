@@ -1,97 +1,152 @@
 const express = require('express');
 const router = express.Router();
+
 const Trade = require('../models/Trade');
 const Listing = require('../models/Listing');
 const auth = require('../middleware/auth');
 
-
 // ------------------------------------------------------------
 // CREATE TRADE (swap): offerListingId ↔ requestListingId
+// Body: { offerListingId, requestListingId }
 // ------------------------------------------------------------
 router.post('/', auth, async (req, res) => {
-  const { offerListingId, requestListingId } = req.body;
+  try {
+    const { offerListingId, requestListingId } = req.body;
 
-  const offerListing = await Listing.findById(offerListingId).populate('seller');
-  const requestListing = await Listing.findById(requestListingId).populate('seller');
+    if (!offerListingId || !requestListingId) {
+      return res.status(400).json({ error: 'Both listings are required.' });
+    }
 
-  if (!offerListing || !requestListing)
-    return res.status(404).json({ error: 'One or both listings not found' });
+    const [offerListing, requestListing] = await Promise.all([
+      Listing.findById(offerListingId).populate('seller'),
+      Listing.findById(requestListingId).populate('seller'),
+    ]);
 
-  // Prevent self-trading
-  if (requestListing.seller._id.toString() === req.user._id.toString())
-    return res.status(400).json({ error: 'You cannot trade with your own listing' });
+    if (!offerListing || !requestListing) {
+      return res.status(404).json({ error: 'One or both listings not found.' });
+    }
 
-  // Category match required
-  if (offerListing.category !== requestListing.category)
-    return res.status(400).json({ error: 'Trades must be within the same category' });
+    if (offerListing.category !== requestListing.category) {
+      return res.status(400).json({ error: 'Trades must be within the same category.' });
+    }
 
-  // User must own the offered listing
-  if (offerListing.seller._id.toString() !== req.user._id.toString())
-    return res.status(403).json({ error: 'You can only offer a listing you own' });
+    if (offerListing.seller._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'You can only offer a listing you own.' });
+    }
 
-  const trade = await Trade.create({
-    offerListing: offerListing._id,
-    requestListing: requestListing._id,
-    seller: requestListing.seller._id,  // owner of the listing being requested
-    buyer: req.user._id,
-    category: offerListing.category,
-    status: 'pending'
-  });
+    if (offerListing.status !== 'open' || requestListing.status !== 'open') {
+      return res.status(400).json({ error: 'Both listings must be open.' });
+    }
 
-  res.json(trade);
+    const trade = await Trade.create({
+      offerListing: offerListing._id,
+      requestListing: requestListing._id,
+      seller: requestListing.seller._id, // owner of requested listing
+      buyer: req.user._id,               // you (the initiator)
+      category: offerListing.category,
+      status: 'pending',
+    });
+
+    const populated = await Trade.findById(trade._id)
+      .populate('offerListing')
+      .populate('requestListing')
+      .populate('buyer', 'username')
+      .populate('seller', 'username');
+
+    res.json(populated);
+  } catch (err) {
+    console.error('Error creating trade:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
 });
-
 
 // ------------------------------------------------------------
 // GET ALL TRADES FOR CURRENT USER
 // ------------------------------------------------------------
 router.get('/', auth, async (req, res) => {
-  const trades = await Trade.find({
-    $or: [{ buyer: req.user._id }, { seller: req.user._id }]
-  })
-    .populate('offerListing')
-    .populate('requestListing')
+  try {
+    const trades = await Trade.find({
+      $or: [
+        { buyer: req.user._id },
+        { seller: req.user._id }
+      ]
+    })
     .populate('buyer', 'username')
-    .populate('seller', 'username');
+    .populate('seller', 'username')
+    .populate('offerListing')
+    .populate('requestListing');
 
-  res.json(trades);
+    res.json(trades);
+  } catch (err) {
+    console.error("Error fetching trades:", err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-
 // ------------------------------------------------------------
-// UPDATE TRADE STATUS (accept or decline)
+// UPDATE TRADE STATUS (accept / decline / cancel)
+// Body: { status } where status ∈ ['pending','completed','cancelled']
+// Only the seller (owner of requested listing) can change status.
 // ------------------------------------------------------------
 router.put('/:id', auth, async (req, res) => {
-  const { status } = req.body;
+  try {
+    const { status } = req.body;
 
-  if (!['pending', 'completed', 'cancelled', 'declined'].includes(status))
-    return res.status(400).json({ error: 'Invalid status' });
+    if (!['pending', 'completed', 'cancelled'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status.' });
+    }
 
-  const trade = await Trade.findById(req.params.id);
-  if (!trade) return res.status(404).json({ error: 'Trade not found' });
+    const trade = await Trade.findById(req.params.id)
+      .populate('offerListing')
+      .populate('requestListing');
 
-  // Only the seller of the requested listing can accept/decline
-  if (trade.seller.toString() !== req.user._id.toString())
-    return res.status(403).json({ error: 'Not authorized to update this trade' });
+    if (!trade) {
+      return res.status(404).json({ error: 'Trade not found.' });
+    }
 
-  // If trade is accepted (completed)
-  if (status === 'completed') {
-    const offerListing = await Listing.findById(trade.offerListing);
-    const requestListing = await Listing.findById(trade.requestListing);
+    if (trade.seller.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Not authorized to update this trade.' });
+    }
 
-    offerListing.status = 'completed';
-    requestListing.status = 'completed';
+    if (trade.status !== 'pending') {
+      return res.status(400).json({ error: 'Trade is no longer pending.' });
+    }
 
-    await offerListing.save();
-    await requestListing.save();
+    // If seller accepts, mark both listings completed
+    if (status === 'completed') {
+      if (trade.offerListing) {
+        trade.offerListing.status = 'completed';
+        await trade.offerListing.save();
+      }
+      if (trade.requestListing) {
+        trade.requestListing.status = 'completed';
+        await trade.requestListing.save();
+      }
+    }
+
+    // If seller cancels/declines, you *could* set offerListing back to open (optional)
+    if (status === 'cancelled') {
+      if (trade.offerListing && trade.offerListing.status === 'pending') {
+        trade.offerListing.status = 'open';
+        await trade.offerListing.save();
+      }
+    }
+
+    trade.status = status;
+    await trade.save();
+
+    const populated = await Trade.findById(trade._id)
+      .populate('offerListing')
+      .populate('requestListing')
+      .populate('buyer', 'username')
+      .populate('seller', 'username');
+
+    res.json(populated);
+  } catch (err) {
+    console.error('Error updating trade:', err);
+    res.status(500).json({ error: 'Server error.' });
   }
-
-  trade.status = status;
-  await trade.save();
-
-  res.json(trade);
 });
-
 
 module.exports = router;
 

@@ -51,108 +51,128 @@
     <div id="username-display" style="font-size: 26px; font-weight: bold; margin-top: 20px;"></div>
   </div>
 
-  <script>
-    async function loadYourTrades() {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Please login first.");
-        return;
-      }
+  <script src="auth.js"></script>
+<script>
+  requireAuth();
+</script>
 
-      const user = JSON.parse(localStorage.getItem("user"));
-      document.getElementById("username-display").textContent = user?.username || "";
+<script>
+async function loadYourTrades() {
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user"));
 
-      //Fetch your listings
-      const listingsRes = await fetch("/api/listings/my-listings", {
-        headers: { Authorization: "Bearer " + token }
-      });
-      const myListings = await listingsRes.json();
+  if (!token || !user) return location.href = "login.html";
 
-      const publishedBody = document.querySelector("#published-tickets tbody");
-      publishedBody.innerHTML = "";
+  document.getElementById("username-display").textContent = user.username;
 
-      myListings.forEach((l) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${l.event}</td>
-          <td>
-            ${
-              l.status === "pending"
-                ? '<span class="status-pending">Pending Acceptance</span>'
-                : l.status === "open"
-                ? '<button data-id="' + l._id + '" class="btn-remove">Remove</button>'
-                : "Completed"
-            }
-          </td>
-        `;
-        publishedBody.appendChild(row);
-      });
+  // -----------------------------------------------------
+  // 1. Load YOUR LISTINGS (Published Tickets)
+  // -----------------------------------------------------
+  const listingsRes = await fetch("/api/listings/my-listings", {
+    headers: { Authorization: "Bearer " + token }
+  });
+  const myListings = await listingsRes.json();
 
-      document.querySelectorAll(".btn-remove").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          if (!confirm("Remove this listing?")) return;
+  const publishedBody = document.querySelector("#published-tickets tbody");
+  publishedBody.innerHTML = "";
 
-          const res = await fetch("/api/listings/" + btn.dataset.id, {
-            method: "DELETE",
-            headers: { Authorization: "Bearer " + token }
-          });
+  myListings.forEach(l => {
+    const row = document.createElement("tr");
+    let statusCell = "";
 
-          if (res.ok) loadYourTrades();
-        });
-      });
-
-      //Fetch all trades involving you
-      const tradesRes = await fetch("/api/trades", {
-        headers: { Authorization: "Bearer " + token }
-      });
-      const trades = await tradesRes.json();
-
-      const pendingBody = document.querySelector("#pending-trades tbody");
-      pendingBody.innerHTML = "";
-
-      trades.forEach((t) => {
-        const isSeller = t.seller._id === user._id;
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${t.buyer.username}</td>
-          <td>${t.offerListing?.event}</td>
-          <td>${t.requestListing?.event}</td>
-          <td>
-            ${
-              isSeller && t.status === "pending"
-                ? `
-                <button class="btn-decline" data-id="${t._id}" data-status="cancelled">Decline</button>
-                <button class="btn-accept" data-id="${t._id}" data-status="completed">Accept</button>
-                `
-                : `<span class="status-pending">${t.status}</span>`
-            }
-          </td>
-        `;
-        pendingBody.appendChild(row);
-      });
-
-      document.querySelectorAll(".btn-accept, .btn-decline").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const tradeId = btn.dataset.id;
-          const status = btn.dataset.status;
-
-          const res = await fetch("/api/trades/" + tradeId, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + token
-            },
-            body: JSON.stringify({ status })
-          });
-
-          if (res.ok) loadYourTrades();
-        });
-      });
+    if (l.status === "open") {
+      statusCell = `<button data-id="${l._id}" class="btn-remove">Remove</button>`;
+    } else if (l.status === "pending") {
+      statusCell = `<span class="status-pending">Pending Trade</span>`;
+    } else if (l.status === "completed") {
+      statusCell = `<span class="status-complete">Completed</span>`;
+    } else {
+      statusCell = l.status;
     }
 
-    loadYourTrades();
-  </script>
+    row.innerHTML = `
+      <td>${l.event}</td>
+      <td>${statusCell}</td>
+    `;
+    publishedBody.appendChild(row);
+  });
+
+  // REMOVE listing
+  document.querySelectorAll(".btn-remove").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Remove this listing?")) return;
+
+      await fetch("/api/listings/" + btn.dataset.id, {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      loadYourTrades();
+    });
+  });
+
+  // -----------------------------------------------------
+  // 2. Load TRADES involving the user
+  // -----------------------------------------------------
+  const tradesRes = await fetch("/api/trades", {
+    headers: { Authorization: "Bearer " + token }
+  });
+  const trades = await tradesRes.json();
+
+  const pendingBody = document.querySelector("#pending-trades tbody");
+  pendingBody.innerHTML = "";
+
+  trades.forEach(t => {
+    const isSeller = t.seller._id === user._id;
+
+    let actionCell = "";
+
+    if (t.status === "pending" && isSeller) {
+      actionCell = `
+        <button class="btn-decline" data-id="${t._id}" data-status="declined">Decline</button>
+        <button class="btn-accept" data-id="${t._id}" data-status="accepted">Accept</button>
+      `;
+    } else if (t.status === "accepted") {
+      actionCell = `<span class="status-complete">Accepted</span>`;
+    } else if (t.status === "declined") {
+      actionCell = `<span class="status-decline">Declined</span>`;
+    } else {
+      actionCell = `<span class="status-pending">${t.status}</span>`;
+    }
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${t.buyer.username}</td>
+      <td>${t.offerListing?.event || ""}</td>
+      <td>${t.requestListing?.event || ""}</td>
+      <td>${actionCell}</td>
+    `;
+    pendingBody.appendChild(row);
+  });
+
+  // ACCEPT / DECLINE actions
+  document.querySelectorAll(".btn-accept, .btn-decline").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const tradeId = btn.dataset.id;
+      const status = btn.dataset.status;
+
+      await fetch("/api/trades/" + tradeId, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        },
+        body: JSON.stringify({ status })
+      });
+
+      loadYourTrades();
+    });
+  });
+}
+
+loadYourTrades();
+</script>
+
 
 </body>
 </html>

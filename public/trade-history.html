@@ -25,6 +25,12 @@ rel="stylesheet" href="styles.css"></head><body>
     <tbody></tbody>
   </table>
 </div>
+
+<script src="auth.js"></script>
+<script>
+  requireAuth();
+</script>
+
 <script>
 async function loadHistory(){
   const token = localStorage.getItem('token');
@@ -36,8 +42,13 @@ async function loadHistory(){
 tbody.innerHTML='';
   trades.forEach(t=>{
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${t.buyer?.username || ''}</td><td>${new 
-Date(t.createdAt).toLocaleString()}</td><td>${t.listing?.event}</td><td>-</td><td>${t.tradeId}</td>`;
+    tr.innerHTML = `
+      <td>${t.buyer?.username || ''}</td>
+      <td>${new Date(t.createdAt).toLocaleString()}</td>
+      <td>${t.offerListing?.event || ''}</td>
+      <td>${t.requestListing?.event || ''}</td>
+      <td>${t.tradeId}</td>`;
+
     tbody.appendChild(tr);
   });
 }

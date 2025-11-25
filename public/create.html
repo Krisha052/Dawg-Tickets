@@ -85,6 +85,11 @@
     </div>
   </div>
 
+<script src="auth.js"></script>
+<script>
+  redirectIfAuthed();
+</script>
+
 <script>
 // ----------------------
 // CREATE ACCOUNT LOGIC
@@ -113,6 +118,7 @@ document.getElementById("formCreate").addEventListener("submit", async (e) => {
 
   if (res.ok) {
     localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
     alert("Account created!");
     location.href = "index.html#events"; // redirect to homepage
   } else {
