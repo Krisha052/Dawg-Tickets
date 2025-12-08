@@ -23,9 +23,9 @@ deliverables.
 
 To run this project, please create a `.env` file in the project root with the following content: (ordinarily, we would not share this information)
 
-- MONGO_URI=mongodb+srv://<yourRealUser>:<yourRealPassword>@<yourCluster>.mongodb.net/dawg-tickets?retryWrites=true&w=majority
-- JWT_SECRET=someSecretUsedForTokens
-- ADMIN_EMAILS=admin1@uga.edu,admin2@uga.edu   # or just one email you used
+- MONGO_URI=mongodb+srv://rathodkrisha05_db_user:0dvWVtQuXvOKQqSS@dawg-tickets.sbadfrw.mongodb.net/?appName=Dawg-Tickets
+- JWT_SECRET=044e64da08675f9703224f72e9899cc31dc9c6a9c3770e67da510d07f729fbe07d3065e67a43157ca201f43469cb0531cdeb4c94a3233b851ee729c2f4c7118e
+- ADMIN_EMAILS=admin1@uga.edu,admin2@uga.edu   # or just one email you used (login with this email when you want to access admin view)
 - PORT=3000
 
 # Running the program
