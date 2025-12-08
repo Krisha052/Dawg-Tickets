@@ -23,15 +23,15 @@ deliverables.
 
 To run this project, please create a `.env` file in the project root with the following content: (ordinarily, we would not share this information)
 
-MONGO_URI=mongodb+srv://<yourRealUser>:<yourRealPassword>@<yourCluster>.mongodb.net/dawg-tickets?retryWrites=true&w=majority
-JWT_SECRET=someSecretUsedForTokens
-ADMIN_EMAILS=admin1@uga.edu,admin2@uga.edu   # or just one email you used
-PORT=3000
+- MONGO_URI=mongodb+srv://<yourRealUser>:<yourRealPassword>@<yourCluster>.mongodb.net/dawg-tickets?retryWrites=true&w=majority
+- JWT_SECRET=someSecretUsedForTokens
+- ADMIN_EMAILS=admin1@uga.edu,admin2@uga.edu   # or just one email you used
+- PORT=3000
 
 # Running the program
-npm install
-node index.js
-or: nodemon index.js
+- npm install
+- node index.js
+- or: nodemon index.js
 
 # Visit
 http://localhost:3000 port to open the website
