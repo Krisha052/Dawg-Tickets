@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin — Trade History</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="logo">
+    <img src="images/logo.png" alt="logo" style="width:48px;height:48px;">
+    <div>Dawg-Tickets — Admin</div>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#events">Events</a>
+    <a href="your-trades.html">Your Trades</a>
+    <a href="trade-history.html">User Trade History</a>
+    <a href="create-listing.html">+ Create Trade</a>
+  </nav>
+</header>
+
+<div class="container">
+  <h1>Admin Trade History (All Trades)</h1>
+  <table class="table" id="admin-history">
+    <thead>
+      <tr>
+        <th>Trade ID</th>
+        <th>Created At</th>
+        <th>Buyer</th>
+        <th>Seller</th>
+        <th>Offer Listing</th>
+        <th>Request Listing</th>
+        <th>Category</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script src="auth.js"></script>
+<script>
+  // Require login first
+  requireAuth();
+</script>
+
+<script>
+async function loadAdminHistory() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please log in as an admin.');
+    window.location.href = 'admin-login.html';
+    return;
+  }
+
+  const res = await fetch('/api/trades/admin/all', {
+    headers: { Authorization: 'Bearer ' + token }
+  });
+
+  if (res.status === 403) {
+    alert('You are not an admin.');
+    window.location.href = 'index.html';
+    return;
+  }
+
+  if (!res.ok) {
+    alert('Failed to load admin trade history.');
+    return;
+  }
+
+  const trades = await res.json();
+  const tbody = document.querySelector('#admin-history tbody');
+  tbody.innerHTML = '';
+
+  trades.forEach(t => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${t.tradeId}</td>
+      <td>${new Date(t.createdAt).toLocaleString()}</td>
+      <td>${t.buyer?.username || ''} (${t.buyer?.email || ''})</td>
+      <td>${t.seller?.username || ''} (${t.seller?.email || ''})</td>
+      <td>${t.offerListing?.event || ''}</td>
+      <td>${t.requestListing?.event || ''}</td>
+      <td>${t.category || ''}</td>
+      <td>${t.status || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+loadAdminHistory();
+</script>
+</body>
+</html>
+

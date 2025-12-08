@@ -4,6 +4,11 @@ const router = express.Router();
 const Trade = require('../models/Trade');
 const Listing = require('../models/Listing');
 const auth = require('../middleware/auth');
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
+  .split(',')
+  .map(e => e.trim().toLowerCase())
+  .filter(Boolean);
+
 
 // ------------------------------------------------------------
 // CREATE TRADE (swap): offerListingId ↔ requestListingId
@@ -145,6 +150,33 @@ router.put('/:id', auth, async (req, res) => {
   } catch (err) {
     console.error('Error updating trade:', err);
     res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// ------------------------------------------------------------
+// ADMIN: Full trade history
+// GET /api/trades/admin/all
+// Requires: logged-in user whose email is in ADMIN_EMAILS
+// ------------------------------------------------------------
+router.get('/admin/all', auth, async (req, res) => {
+  try {
+    const email = req.user.email.toLowerCase();
+
+    if (!ADMIN_EMAILS.includes(email)) {
+      return res.status(403).json({ error: "Admin access only" });
+    }
+
+    const trades = await Trade.find({})
+      .sort({ createdAt: -1 })
+      .populate('offerListing')
+      .populate('requestListing')
+      .populate('buyer', 'username email')
+      .populate('seller', 'username email');
+
+    res.json(trades);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 

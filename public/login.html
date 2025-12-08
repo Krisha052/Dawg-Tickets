@@ -106,15 +106,36 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
 
   const data = await res.json();
 
-  if (res.ok) {
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    alert("Logged in!");
-    location.href = "index.html#events"; // redirect to home/events
-  } else {
+  if (!res.ok) {
     alert(data.error || "Login failed.");
+    return;
   }
+
+  // Store auth info
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("user", JSON.stringify(data.user));
+
+  //Check if this user is an admin by calling the admin-only endpoint
+  try {
+    const adminCheck = await fetch("/api/trades/admin/all", {
+      headers: { Authorization: "Bearer " + data.token }
+    });
+
+    if (adminCheck.status === 200) {
+      alert("Logged in as admin!");
+      location.href = "admin-trade-history.html";
+      return;
+    }
+  } catch (err) {
+    console.error("Error checking admin status:", err);
+    // if this fails, just treat as normal user
+  }
+
+  // Normal user fallback
+  alert("Logged in!");
+  location.href = "index.html#events";
 });
+
 </script>
 
 </body>
