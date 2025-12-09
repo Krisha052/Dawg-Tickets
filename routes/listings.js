@@ -9,43 +9,68 @@ const auth = require('../middleware/auth');
 // GET all open listings
 // ------------------------------------------------------------
 router.get('/', async (req, res) => {
-  const { event } = req.query;
-  const filter = { status: 'open' };
+  try {
+    const { event } = req.query;
+    const filter = { status: 'open' };
 
-  if (event) {
-    filter.event = new RegExp(event, 'i');
+    if (event) {
+      filter.event = new RegExp(event, 'i');
+    }
+
+    const listings = await Listing.find(filter).populate('seller', 'username');
+    return res.json(listings);
+  } catch (err) {
+    console.error('Error fetching listings:', err);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Server error' });
+    }
   }
-
-  const listings = await Listing.find(filter).populate('seller', 'username');
-  res.json(listings);
 });
 
 // ------------------------------------------------------------
-// GET logged-in user's listings  <-- MUST come before '/:id'
+// GET logged-in user's listings  (ONLY ONE route, no duplicate)
 // ------------------------------------------------------------
 router.get('/my-listings', auth, async (req, res) => {
-  const listings = await Listing.find({ seller: req.user._id });
-  res.json(listings);
+  try {
+    const listings = await Listing.find({ seller: req.user._id });
+    return res.json(listings);
+  } catch (err) {
+    console.error('Error fetching user listings:', err);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Server error' });
+    }
+  }
 });
 
 // ------------------------------------------------------------
 // GET listing by ID
 // ------------------------------------------------------------
 router.get('/:id', async (req, res) => {
-  const listing = await Listing.findById(req.params.id)
-    .populate('seller', 'username email');
+  try {
+    const listing = await Listing.findById(req.params.id)
+      .populate('seller', 'username email');
 
-  if (!listing) return res.status(404).json({ error: 'Not found' });
+    if (!listing) {
+      return res.status(404).json({ error: 'Not found' });
+    }
 
-  res.json(listing);
+    return res.json(listing);
+  } catch (err) {
+    console.error('Error fetching listing by id:', err);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Server error' });
+    }
+  }
 });
 
 // ------------------------------------------------------------
-// CREATE LISTING (ticket validation)
+// CREATE LISTING (validates against ValidTicket)
 // ------------------------------------------------------------
 router.post('/', auth, async (req, res) => {
   try {
     const { category, event, seat, preferredTrade, ticketNumber } = req.body;
+
+    console.log('Create listing body:', req.body); // debug
 
     if (!category || !event || !seat || !ticketNumber) {
       return res.status(400).json({ error: 'Missing required fields.' });
@@ -62,7 +87,9 @@ router.post('/', auth, async (req, res) => {
       ticket.event !== event ||
       ticket.seat !== seat
     ) {
-      return res.status(400).json({ error: 'Ticket details do not match official UGA records.' });
+      return res.status(400).json({
+        error: 'Ticket details do not match official UGA records.'
+      });
     }
 
     if (ticket.isUsed) {
@@ -74,21 +101,23 @@ router.post('/', auth, async (req, res) => {
       category,
       event,
       seat,
-      preferredTrade: preferredTrade || null,
-      ticketNumber
+      preferredTrade: preferredTrade || '',
+      ticketNumber,
+      status: 'open',
     });
 
     ticket.isUsed = true;
     await ticket.save();
 
-    res.json({
+    return res.status(201).json({
       message: 'Listing created successfully.',
-      listing
+      listing,
     });
-
   } catch (err) {
     console.error('Error creating listing:', err);
-    res.status(500).json({ error: 'Server error.' });
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Server error.' });
+    }
   }
 });
 
@@ -96,31 +125,24 @@ router.post('/', auth, async (req, res) => {
 // DELETE listing
 // ------------------------------------------------------------
 router.delete('/:id', auth, async (req, res) => {
-  const listing = await Listing.findById(req.params.id);
-  if (!listing) return res.status(404).json({ error: 'Not found' });
-
-  if (!listing.seller.equals(req.user._id)) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-
-  await listing.deleteOne();
-  res.json({ success: true });
-});
-
-
-// ------------------------------------------------------------
-// GET LISTINGS THAT BELONG TO CURRENT USER
-// ------------------------------------------------------------
-router.get('/my-listings', auth, async (req, res) => {
   try {
-    const listings = await Listing.find({ seller: req.user._id });
-    res.json(listings);
+    const listing = await Listing.findById(req.params.id);
+    if (!listing) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    if (!listing.seller.equals(req.user._id)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    await listing.deleteOne();
+    return res.json({ success: true });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error deleting listing:', err);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Server error' });
+    }
   }
 });
-
 
 module.exports = router;
-

@@ -4,11 +4,11 @@ const router = express.Router();
 const Trade = require('../models/Trade');
 const Listing = require('../models/Listing');
 const auth = require('../middleware/auth');
+
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
   .split(',')
   .map(e => e.trim().toLowerCase())
   .filter(Boolean);
-
 
 // ------------------------------------------------------------
 // CREATE TRADE (swap): offerListingId ↔ requestListingId
@@ -58,10 +58,12 @@ router.post('/', auth, async (req, res) => {
       .populate('buyer', 'username')
       .populate('seller', 'username');
 
-    res.json(populated);
+    return res.status(201).json(populated);
   } catch (err) {
     console.error('Error creating trade:', err);
-    res.status(500).json({ error: 'Server error.' });
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Server error.' });
+    }
   }
 });
 
@@ -73,18 +75,20 @@ router.get('/', auth, async (req, res) => {
     const trades = await Trade.find({
       $or: [
         { buyer: req.user._id },
-        { seller: req.user._id }
-      ]
+        { seller: req.user._id },
+      ],
     })
-    .populate('buyer', 'username')
-    .populate('seller', 'username')
-    .populate('offerListing')
-    .populate('requestListing');
+      .populate('buyer', 'username')
+      .populate('seller', 'username')
+      .populate('offerListing')
+      .populate('requestListing');
 
-    res.json(trades);
+    return res.json(trades);
   } catch (err) {
-    console.error("Error fetching trades:", err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error fetching trades:', err);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Server error' });
+    }
   }
 });
 
@@ -129,7 +133,7 @@ router.put('/:id', auth, async (req, res) => {
       }
     }
 
-    // If seller cancels/declines, you *could* set offerListing back to open (optional)
+    // If seller cancels, optionally re-open offer listing
     if (status === 'cancelled') {
       if (trade.offerListing && trade.offerListing.status === 'pending') {
         trade.offerListing.status = 'open';
@@ -146,10 +150,12 @@ router.put('/:id', auth, async (req, res) => {
       .populate('buyer', 'username')
       .populate('seller', 'username');
 
-    res.json(populated);
+    return res.json(populated);
   } catch (err) {
     console.error('Error updating trade:', err);
-    res.status(500).json({ error: 'Server error.' });
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Server error.' });
+    }
   }
 });
 
@@ -163,7 +169,7 @@ router.get('/admin/all', auth, async (req, res) => {
     const email = req.user.email.toLowerCase();
 
     if (!ADMIN_EMAILS.includes(email)) {
-      return res.status(403).json({ error: "Admin access only" });
+      return res.status(403).json({ error: 'Admin access only' });
     }
 
     const trades = await Trade.find({})
@@ -173,12 +179,13 @@ router.get('/admin/all', auth, async (req, res) => {
       .populate('buyer', 'username email')
       .populate('seller', 'username email');
 
-    res.json(trades);
+    return res.json(trades);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
+    console.error('Error fetching admin trades:', err);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Server error' });
+    }
   }
 });
 
 module.exports = router;
-

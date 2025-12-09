@@ -99,95 +99,139 @@
   <script src="auth.js"></script>
   <script>
     requireAuth();
-  </script>
+  </script> 
 
-  <script>
-    const EVENT_CATALOG = [
-      { id: 'fb-marshall', title: 'FB: Georgia v. Marshall', category: 'UGA Football' },
-      { id: 'fb-alabama', title: 'FB: Georgia v. Alabama', category: 'UGA Football' },
-      { id: 'fb-tech', title: 'FB: Georgia v. Tech', category: 'UGA Football' },
+<script>
+  const EVENT_CATALOG = [
+    { id: 'fb-marshall', title: 'FB: Georgia v. Marshall', category: 'UGA Football' },
+    { id: 'fb-alabama', title: 'FB: Georgia v. Alabama', category: 'UGA Football' },
+    { id: 'fb-tech', title: 'FB: Georgia v. Tech', category: 'UGA Football' },
 
-      { id: 'bb-kentucky', title: 'MBB: Georgia v. Kentucky', category: 'UGA Basketball' },
-      { id: 'bb-auburn', title: 'MBB: Georgia v. Auburn', category: 'UGA Basketball' },
-      { id: 'bb-tennessee', title: 'MBB: Georgia v. Tennessee', category: 'UGA Basketball' },
+    { id: 'bb-kentucky', title: 'MBB: Georgia v. Kentucky', category: 'UGA Basketball' },
+    { id: 'bb-auburn', title: 'MBB: Georgia v. Auburn', category: 'UGA Basketball' },
+    { id: 'bb-tennessee', title: 'MBB: Georgia v. Tennessee', category: 'UGA Basketball' },
 
-      { id: 'bsb-florida', title: 'BSB: Georgia v. Florida', category: 'UGA Baseball' },
-      { id: 'bsb-auburn', title: 'BSB: Georgia v. Auburn', category: 'UGA Baseball' },
+    { id: 'bsb-florida', title: 'BSB: Georgia v. Florida', category: 'UGA Baseball' },
+    { id: 'bsb-auburn', title: 'BSB: Georgia v. Auburn', category: 'UGA Baseball' },
 
-      { id: 'gym-alabama', title: 'Gym: Georgia v. Alabama', category: 'UGA Gymnastics' }
-    ];
+    { id: 'gym-alabama', title: 'Gym: Georgia v. Alabama', category: 'UGA Gymnastics' }
+  ];
 
-    const categorySelect = document.getElementById('category');
-    const eventSelect = document.getElementById('event');
-    const seatInput = document.getElementById('seat');
-    const preferredSelect = document.getElementById('preferredTrade');
-    const ticketInput = document.getElementById('ticketNumber');
-    const submitBtn = document.getElementById('submitBtn');
+  const form = document.getElementById('createForm');
+  const categorySelect = document.getElementById('category');
+  const eventSelect = document.getElementById('event');
+  const seatInput = document.getElementById('seat');
+  const preferredSelect = document.getElementById('preferredTrade');
+  const ticketInput = document.getElementById('ticketNumber');
+  const submitBtn = document.getElementById('submitBtn');
 
-    categorySelect.addEventListener('change', () => {
-      const category = categorySelect.value;
+  // ---------- SUBMIT HANDLER: actually create the listing ----------
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      eventSelect.innerHTML = '<option value="">Select an event</option>';
-      preferredSelect.innerHTML = '<option value="">No preference</option>';
-      eventSelect.disabled = true;
-      seatInput.disabled = true;
-      preferredSelect.disabled = true;
-      ticketInput.disabled = true;
-      submitBtn.disabled = true;
-
-      if (!category) return;
-
-      EVENT_CATALOG.filter(ev => ev.category === category)
-        .forEach(ev => {
-          const opt = document.createElement('option');
-          opt.value = ev.title;
-          opt.textContent = ev.title;
-          eventSelect.appendChild(opt);
-        });
-
-      eventSelect.disabled = false;
-    });
-
-    eventSelect.addEventListener('change', () => {
-      const hasEvent = !!eventSelect.value;
-      seatInput.disabled = !hasEvent;
-
-      preferredSelect.innerHTML = '<option value="">No preference</option>';
-      const category = categorySelect.value;
-
-      EVENT_CATALOG.filter(ev => ev.category === category)
-        .forEach(ev => {
-          const opt = document.createElement('option');
-          opt.value = ev.title;
-          opt.textContent = ev.title;
-          preferredSelect.appendChild(opt);
-        });
-
-      preferredSelect.disabled = !hasEvent;
-
-      updateSubmitState();
-    });
-
-    seatInput.addEventListener('input', () => {
-      ticketInput.disabled = seatInput.value.trim() === '';
-      updateSubmitState();
-    });
-
-    ticketInput.addEventListener('input', () => {
-      updateSubmitState();
-    });
-
-    function updateSubmitState() {
-      const ready =
-        categorySelect.value &&
-        eventSelect.value &&
-        seatInput.value.trim() &&
-        ticketInput.value.trim();
-
-      submitBtn.disabled = !ready;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Session expired. Please log in again.');
+      location.href = 'login.html';
+      return;
     }
-  </script>
 
-</body>
-</html>
+    const payload = {
+      category: categorySelect.value,
+      event: eventSelect.value,
+      seat: seatInput.value.trim(),
+      preferredTrade: preferredSelect.value,
+      ticketNumber: ticketInput.value.trim(),
+    };
 
+    try {
+      const res = await fetch('/api/listings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error('Create listing error:', data);
+        alert(data.error || 'Failed to create listing.');
+        return;
+      }
+
+      alert('Listing created successfully!');
+      // go back to events (adjust if your main page is different)
+      location.href = 'index.html#events';
+    } catch (err) {
+      console.error('Network error creating listing:', err);
+      alert('Network error creating listing. Check console for details.');
+    }
+  });
+
+  // ---------- existing UI behaviour (category → events, etc.) ----------
+  categorySelect.addEventListener('change', () => {
+    const category = categorySelect.value;
+
+    eventSelect.innerHTML = '<option value="">Select an event</option>';
+    preferredSelect.innerHTML = '<option value="">No preference</option>';
+    eventSelect.disabled = true;
+    seatInput.disabled = true;
+    preferredSelect.disabled = true; 
+    ticketInput.disabled = true;
+    submitBtn.disabled = true;
+
+    if (!category) return;
+
+    EVENT_CATALOG.filter(ev => ev.category === category)
+      .forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev.title;
+        opt.textContent = ev.title;
+        eventSelect.appendChild(opt);
+      });
+
+    eventSelect.disabled = false;
+  });
+
+  eventSelect.addEventListener('change', () => {
+    const hasEvent = !!eventSelect.value;
+    seatInput.disabled = !hasEvent;
+
+    preferredSelect.innerHTML = '<option value="">No preference</option>';
+    const category = categorySelect.value;
+
+    EVENT_CATALOG.filter(ev => ev.category === category)
+      .forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev.title;
+        opt.textContent = ev.title;
+        preferredSelect.appendChild(opt);
+      });
+
+    preferredSelect.disabled = !hasEvent;
+
+    updateSubmitState();
+  });
+
+  seatInput.addEventListener('input', () => {
+    ticketInput.disabled = seatInput.value.trim() === '';
+    updateSubmitState();
+  });
+
+  ticketInput.addEventListener('input', () => {
+    updateSubmitState();
+  });
+
+  function updateSubmitState() {
+    const ready =
+      categorySelect.value &&
+      eventSelect.value &&
+      seatInput.value.trim() &&
+      ticketInput.value.trim();
+
+    submitBtn.disabled = !ready;
+  }
+</script>

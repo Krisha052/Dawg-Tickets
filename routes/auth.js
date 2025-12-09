@@ -28,11 +28,10 @@ email: user.email } });
 // login
 router.post('/login', async (req, res) => {
   try {
-    const { emailOrUsername, password } = req.body;
-    if (!emailOrUsername || !password) return res.status(400).json({ 
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ 
 error: 'Missing fields' });
-    const user = await User.findOne({ $or: [{ email: emailOrUsername }, { 
-username: emailOrUsername }] });
+    const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' 
 });
     const ok = await bcrypt.compare(password, user.password);
@@ -47,4 +46,3 @@ email: user.email } });
 });
 
 module.exports = router;
-
