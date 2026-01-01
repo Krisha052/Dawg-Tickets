@@ -1,5 +1,7 @@
 # Dawg-Tickets
 
+![CI](https://github.com/Krisha052/Dawg-Tickets/actions/workflows/ci.yml/badge.svg)
+
 This is a project by Krisha Rathod who is the chief programmer, Brendan Sheppard, Joshua Candra, and Jeremiah Jones
 
 The University of Georgia Athletic Association (UGAAA) would like to create a web application that allows students to trade and transfer game tickets between each other. This UGA Ticket Trading Web Application will enable users to exchange tickets for UGA sporting events, such as football, basketball, gymnastics, without money transactions. This application will focus strictly on trading and transferring, not selling, allowing users to swap tickets they already own for those to other events or seats, ensuring fairness and compliance with university policies. 
