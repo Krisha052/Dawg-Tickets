@@ -2,26 +2,54 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
   pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: dawgtickets
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    env:
+      JWT_SECRET: testsecret
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dawgtickets?schema=public
+      MONGO_URI: mongodb://localhost:27017/dawgtickets
+      ADMIN_EMAILS: admin@example.com
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
-      - name: Install dependencies
+      - name: Install server deps
+        working-directory: server
         run: npm ci
 
+      - name: Prisma migrate
+        working-directory: server
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+
       - name: Run tests
+        working-directory: server
         run: npm test
 

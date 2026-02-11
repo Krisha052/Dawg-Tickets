@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  roles          UserRole[]
+  listings       Listing[]
+  tradesAsBuyer  Trade[] @relation("buyer")
+  tradesAsSeller Trade[] @relation("seller")
+
+  moderationActions ModerationAction[]
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users UserRole[]
+}
+
+model UserRole {
+  userId String
+  roleId Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model Event {
+  id    String   @id @default(uuid())
+  name  String
+  date  DateTime
+  venue String?
+
+  tickets  Ticket[]
+  listings Listing[]
+}
+
+model Ticket {
+  id           String @id @default(uuid())
+  eventId      String
+  seat         String
+  ticketNumber String @unique
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  listing Listing?
+
+  @@unique([eventId, seat])
+}
+
+model Listing {
+  id             String   @id @default(uuid())
+  sellerId       String
+  eventId        String
+  ticketId       String   @unique
+  category       String
+  preferredTrade String?
+  priceCents     Int?
+  status         String   @default("open") // open|pending|completed
+  createdAt      DateTime @default(now())
+
+  seller User  @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  event  Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+
+  tradesRequested Trade[] @relation("requestListing")
+  tradesOffered   Trade[] @relation("offerListing")
+}
+
+model Trade {
+  id               String   @id @default(uuid())
+  tradeCode        String   @unique
+  requestListingId String
+  offerListingId   String?
+  sellerId         String
+  buyerId          String
+  status           String   @default("pending") // pending|accepted|declined
+  createdAt        DateTime @default(now())
+
+  requestListing Listing @relation("requestListing", fields: [requestListingId], references: [id], onDelete: Cascade)
+  offerListing   Listing? @relation("offerListing", fields: [offerListingId], references: [id], onDelete: SetNull)
+
+  seller User @relation("seller", fields: [sellerId], references: [id], onDelete: Restrict)
+  buyer  User @relation("buyer",  fields: [buyerId], references: [id], onDelete: Restrict)
+
+  @@index([requestListingId])
+}
+
+model ModerationAction {
+  id        String   @id @default(uuid())
+  adminId   String
+  listingId String?
+  tradeId   String?
+  action    String
+  createdAt DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id], onDelete: Restrict)
+}
