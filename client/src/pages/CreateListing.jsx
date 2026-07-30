@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function CreateListing() {
-    const [category, setCategory] = useState("student");
+    const [category, setCategory] = useState("UGA Football");
     const [event, setEvent] = useState("");
     const [seat, setSeat] = useState("");
     const [ticketNumber, setTicketNumber] = useState("");
@@ -34,11 +34,17 @@ export default function CreateListing() {
         }
 
         return (
-        <div style={{ padding: 16 }}>
+        <div className="page">
             <h2>Create Listing</h2>
             {error && <p className="error-text">{error}</p>}
 
             <form onSubmit={onSubmit}>
+                <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                    <option value="UGA Football">UGA Football</option>
+                    <option value="UGA Basketball">UGA Basketball</option>
+                    <option value="UGA Baseball">UGA Baseball</option>
+                    <option value="UGA Gymnastics">Gymdawgs</option>
+                </select>
                 <input placeholder="Event name" value={event} onChange={(e) => setEvent(e.target.value)} required />
                 <input placeholder="Seat (must match registry)" value={seat} onChange={(e) => setSeat(e.target.value)} required />
                 <input placeholder="Ticket Number" value={ticketNumber} onChange={(e) => setTicketNumber(e.target.value)} required />

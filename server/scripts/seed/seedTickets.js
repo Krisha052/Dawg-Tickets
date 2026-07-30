@@ -1,6 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const ValidTicket = require('./models/ValidTicket');
+const ValidTicket = require('../../models/ValidTicket');
 
 async function connectDB() {
   try {

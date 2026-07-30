@@ -86,6 +86,79 @@ router.get("/me", auth, async (req, res) => {
   }
 });
 
+router.patch("/:id/accept", auth, async (req, res) => {
+  try {
+    const trade = await prisma.trade.findUnique({ where: { id: req.params.id } });
+    if (!trade) return res.status(404).json({ error: "Trade not found" });
+    if (trade.sellerId !== req.user.id) return res.status(403).json({ error: "Only the seller can accept this trade" });
+    if (trade.status !== "pending") return res.status(400).json({ error: "Trade is not pending" });
+
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.listing.update({ where: { id: trade.requestListingId }, data: { status: "completed" } });
+      if (trade.offerListingId) {
+        await tx.listing.update({ where: { id: trade.offerListingId }, data: { status: "completed" } });
+      }
+      return tx.trade.update({
+        where: { id: trade.id },
+        data: { status: "accepted" },
+        include: {
+          requestListing: { include: { event: true, ticket: true } },
+          buyer: { select: { id: true, username: true } },
+          seller: { select: { id: true, username: true } }
+        }
+      });
+    });
+
+    await AuditLog.create({
+      actorUserId: req.user.id,
+      action: "TRADE_ACCEPT",
+      entityType: "trade",
+      entityId: trade.id,
+      metadata: {}
+    });
+
+    res.json(updated);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "server error" });
+  }
+});
+
+router.patch("/:id/decline", auth, async (req, res) => {
+  try {
+    const trade = await prisma.trade.findUnique({ where: { id: req.params.id } });
+    if (!trade) return res.status(404).json({ error: "Trade not found" });
+    if (trade.sellerId !== req.user.id) return res.status(403).json({ error: "Only the seller can decline this trade" });
+    if (trade.status !== "pending") return res.status(400).json({ error: "Trade is not pending" });
+
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.listing.updateMany({ where: { id: trade.requestListingId, status: "pending" }, data: { status: "open" } });
+      return tx.trade.update({
+        where: { id: trade.id },
+        data: { status: "declined" },
+        include: {
+          requestListing: { include: { event: true, ticket: true } },
+          buyer: { select: { id: true, username: true } },
+          seller: { select: { id: true, username: true } }
+        }
+      });
+    });
+
+    await AuditLog.create({
+      actorUserId: req.user.id,
+      action: "TRADE_DECLINE",
+      entityType: "trade",
+      entityId: trade.id,
+      metadata: {}
+    });
+
+    res.json(updated);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "server error" });
+  }
+});
+
 // admin example
 router.get("/admin/all", auth, requireRole("admin"), async (req, res) => {
   try {

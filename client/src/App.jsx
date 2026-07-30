@@ -1,4 +1,5 @@
 import { Routes, Route, Link } from "react-router-dom";
+import "./App.css";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Listings from "./pages/Listings.jsx";
@@ -8,8 +9,8 @@ import Admin from "./pages/Admin.jsx";
 
 export default function App() {
   return (
-    <div style={{ padding: 16, fontFamily: "sans-serif" }}>
-      <nav style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+    <div>
+      <nav className="navbar">
         <Link to="/listings">Listings</Link>
         <Link to="/create-listing">Create Listing</Link>
         <Link to="/trades">My Trades</Link>

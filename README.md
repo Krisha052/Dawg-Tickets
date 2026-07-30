@@ -21,37 +21,74 @@ The success of this project is measured by:
 - Demonstrating the team’s ability to work through the software development lifecycles with understanding of its necessary components, while producing a working product and
 deliverables.
 
-## Implementation
+## Tech Stack
 
-# Environment Setup
+- **Client:** React (Vite), React Router
+- **Server:** Node.js, Express, JWT authentication, role-based access control (RBAC)
+- **Data:** PostgreSQL via Prisma (users, roles, events, tickets, listings, trades) with indexes on hot query paths (`Listing.status/createdAt`, `Listing.sellerId`, `Trade.buyerId/sellerId`); MongoDB via Mongoose for the validated-ticket registry and audit log
+- **Infra:** Docker (server container + Postgres/Mongo via `docker-compose`), GitHub Actions CI/CD (test on every push/PR, build and push the server image to GHCR on merge to `main`)
 
-To run this project, please create a `.env` file in the project root with the following content: (ordinarily, we would not share this information)
+See `server/LOADTEST.md` for measured latency under concurrent load.
+
+## Environment Setup
+
+Create a `server/.env` file (see `server/.env.example`):
 
 ```
-MONGO_URI=mongodb+srv://rathodkrisha05_db_user:0dvWVtQuXvOKQqSS@dawg-tickets.sbadfrw.mongodb.net/?appName=Dawg-Tickets
-JWT_SECRET=044e64da08675f9703224f72e9899cc31dc9c6a9c3770e67da510d07f729fbe07d3065e67a43157ca201f43469cb0531cdeb4c94a3233b851ee729c2f4c7118e
-ADMIN_EMAILS=admin1@uga.edu,admin2@uga.edu   # or just one email you used (login with this email when you want to access admin view)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/dawgtickets?schema=public
+MONGO_URI=mongodb://localhost:27017/dawgtickets
+JWT_SECRET=replace-with-a-long-random-secret
+ADMIN_EMAILS=admin1@uga.edu,admin2@uga.edu   # login with one of these emails to get admin access
 PORT=3000
 ```
 
-# Running the program
+Never commit real secrets — use a local `.env` (already gitignored) or your deployment platform's secret manager.
+
+## Running the program
+
+### With Docker (recommended)
+
 ```
+docker compose up --build
+```
+
+This starts Postgres, Mongo, and the API server together.
+
+### Manually
+
+```
+cd server
 npm install
+npx prisma migrate deploy
 node index.js
-# or: nodemon index.js
+# or: npm run dev
 ```
 
-# Visit
-http://localhost:3000 port to open the website
+```
+cd client
+npm install
+npm run dev
+```
 
-## Tech Stack
-HTML, CSS, JavaScript, Node.js, MongoDB
+Visit `http://localhost:5173` for the React client (proxies `/api` to the server on port 3000), or `http://localhost:3000` for the legacy server-rendered pages under `server/public/`.
 
-## Tentative UI Design
-<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Login%20Page.png?raw=true">
-<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Sign-up%20Page.png?raw=true">
-<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Navigation%20Page.png?raw=true">
-<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Home%20Page.png?raw=true">
-<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Trade%20Creation%20Page.png?raw=true">
-<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Current%20Trades.png?raw=true">
-<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/public/images/Trade%20History%20Page.png?raw=true">
+## Testing
+
+```
+cd server
+npm test
+```
+
+Tests run against a real Postgres database (set `DATABASE_URL`) and an in-memory MongoDB instance spun up automatically via `mongodb-memory-server`.
+
+## Legacy UI screenshots
+
+The screenshots below are from the original static HTML/CSS/JS prototype (still served from `server/public/`). The project has since grown a React client under `client/`.
+
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/server/public/images/Login%20Page.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/server/public/images/Sign-up%20Page.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/server/public/images/Navigation%20Page.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/server/public/images/Home%20Page.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/server/public/images/Trade%20Creation%20Page.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/server/public/images/Current%20Trades.png?raw=true">
+<img src="https://github.com/Krisha052/Dawg-Tickets/blob/main/server/public/images/Trade%20History%20Page.png?raw=true">

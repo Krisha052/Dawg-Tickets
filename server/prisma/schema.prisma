@@ -77,6 +77,9 @@ model Listing {
 
   tradesRequested Trade[] @relation("requestListing")
   tradesOffered   Trade[] @relation("offerListing")
+
+  @@index([status, createdAt])
+  @@index([sellerId])
 }
 
 model Trade {
@@ -96,6 +99,8 @@ model Trade {
   buyer  User @relation("buyer",  fields: [buyerId], references: [id], onDelete: Restrict)
 
   @@index([requestListingId])
+  @@index([buyerId])
+  @@index([sellerId])
 }
 
 model ModerationAction {

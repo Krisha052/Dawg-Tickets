@@ -22,16 +22,19 @@ export default function Admin() {
   }, []);
 
   return (
-    <div style={{ padding: 16 }}>
+    <div className="page">
       <h2>Admin Moderation</h2>
       {error && <p className="error-text">{error}</p>}
 
-      {trades.map((t) => (
-        <div key={t.id} style={{ border: "1px solid #ddd", padding: 12, marginBottom: 8 }}>
-          <div><b>Trade:</b> {t.tradeCode}</div>
-          <div><b>Status:</b> {t.status}</div>
-        </div>
-      ))}
+      <div className="card-grid">
+        {trades.map((t) => (
+          <div key={t.id} className="card">
+            <div><b>Trade:</b> {t.tradeCode}</div>
+            <div><b>Status:</b> {t.status}</div>
+          </div>
+        ))}
+        {!error && trades.length === 0 && <p>No trades yet.</p>}
+      </div>
     </div>
   );
 }

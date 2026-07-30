@@ -9,6 +9,9 @@ const AuditLog = require("../models/AuditLog");
 
 router.get("/", async (req, res) => {
   try {
+    const limit = Math.min(Number(req.query.limit) || 50, 100);
+    const page = Math.max(Number(req.query.page) || 1, 1);
+
     const listings = await prisma.listing.findMany({
       where: { status: "open" },
       include: {
@@ -16,7 +19,9 @@ router.get("/", async (req, res) => {
         event: true,
         ticket: true
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit
     });
     res.json(listings);
   } catch (e) {
